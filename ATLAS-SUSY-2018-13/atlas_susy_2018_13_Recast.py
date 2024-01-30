@@ -141,6 +141,9 @@ def getModelDict(inputFiles,model):
     elif model == 'gluino':
         LLP = 1000021
         LSP = 1000022
+    elif model == 'bb':
+        LLP = 1000005
+        LSP = 1000022        
     else:
         raise ValueError("Unreconized model %s" %model)
 

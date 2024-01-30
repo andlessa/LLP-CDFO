@@ -22,7 +22,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,normalize=False,model='strong',sr='HighPT',nevtsMax=-1):
+def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -59,6 +59,10 @@ def getCutFlow(inputFiles,normalize=False,model='strong',sr='HighPT',nevtsMax=-1
     elif model == 'ewk':
         cutFlowAcceptance['$m_{\\tilde \chi_1^0} (GeV)$'] = modelDict['mLLP']
         cutFlowAcceptance['$\\tau(\\tilde \chi_1^0) (ns)$'] = modelDict['tau_ns']
+    elif model == 'bb':
+        cutFlowAcceptance['$m_{\\tilde b_1} (GeV)$'] = modelDict['mLLP']
+        cutFlowAcceptance['$\\tau(\\tilde b_1) (ns)$'] = modelDict['tau_ns']
+
     cutFlowAcceptance.update({"Total" : 0.0,
                 "Jet selection" : 0.0,
                 "$R_{xy},z <$ 300 mm" : 0.0,
