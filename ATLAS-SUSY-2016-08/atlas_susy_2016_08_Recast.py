@@ -11,7 +11,7 @@ import progressbar as P
 from helper import LLP
 from ATLAS_data.effFunctions import eventEff,vertexEff
 
-delphesDir = os.path.abspath("./DelphesLLP")
+delphesDir = os.path.abspath("../ATLAS-SUSY-2018-13/DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
 
 import ROOT
@@ -79,27 +79,43 @@ def getDisplacedJets(jets,llps,skipPIDs=[1000022]):
     
     return displacedJets
 
-def eventAcc(jets,jetsDisp,sr):
+def eventAcc(jets,met,metCut=200.0,
+             maxJetChargedPT=np.inf,
+             minJetPt1=0.,minJetPt2=0.,
+             minPVdistance=0.0):
+    
+    if met < metCut:
+        return 0.0
+
+    # Split analysis is two bunchs: 75% and 25%
+    lumCut = np.random.random()
+    if lumCut > 0.75:
+        return 1.0
+    
     passAcc = 0.0
-    if sr == 'HighPT':
-        # Apply HighPT jet selection    
-        njet250 = len([j for j in jets if j.PT > 250.0])
-        njet195 = len([j for j in jets if j.PT > 195.0])
-        njet116 = len([j for j in jets if j.PT > 116.0])
-        njet90 = len([j for j in jets if j.PT > 90.0])
-        if (njet250 >= 4) or (njet195 >= 5) or (njet116 >= 6) or (njet90 >= 7):
-            passAcc = 1.0
-    elif sr == 'Trackless':    
-        # Apply Trackless jet selection (only if HighPT has failed)    
-        njet137 = len([j for j in jets if j.PT > 137.0])
-        njet101 = len([j for j in jets if j.PT > 101.0])
-        njet83 = len([j for j in jets if j.PT > 83.0])
-        njet55 = len([j for j in jets if j.PT > 55.0])
-        njetDisp70 = len([j for j in jetsDisp if j.PT > 70.0])
-        njetDisp50 = len([j for j in jetsDisp if j.PT > 50.0])
-        if (njet137 >= 4) or (njet101 >= 5) or (njet83 >= 6) or (njet55 >= 7):
-            if (njetDisp70 >=1) or (njetDisp50 >= 2):
-                passAcc = 1.0
+    # Apply jet cuts
+    good_jets = []
+    for jet in jets:
+        pTCharged = 0.0
+        for ip in range(jet.Constituents.GetEntries()):
+            particle = jet.Constituents.At(ip)
+            if particle.Charge == 0:
+                continue
+            r_prod = np.sqrt(particle.X**2 + particle.Y**2)
+            if r_prod  > minPVdistance:
+                continue
+            pTCharged += particle.PT
+        if pTCharged > maxJetChargedPT:
+            continue
+        good_jets.append(jet)
+
+    
+    good_jets = sorted(good_jets[:], key = lambda j: j.PT, reverse=True)
+
+    if len(good_jets) > 0 and good_jets[0].PT > minJetPt1:
+        passAcc = 1.0
+    elif len(good_jets) > 1 and  good_jets[1].PT > minJetPt2:
+        passAcc = 1.0
     
     return passAcc
 
@@ -198,11 +214,11 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
         f.Close()
 
 
-    lumi = 139.0
+    lumi = 32.8
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    cutFlowHighPT = { "Total" : 0.0,
-                "Jet selection" : 0.0,
+    cutFlow = { "Total" : 0.0,
+                "Jet+MET selection" : 0.0,
                 # "$R_{xy},z <$ 300 mm" : 0.0,
                 # "$R_{DV} > 4$ mm" : 0.0,
                 # "$nTracks >= 5$" : 0.0,
@@ -210,8 +226,6 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
                 "DV selection" : 0.0
                 }
     
-    cutFlowTrackless = {k : v for k,v in cutFlowHighPT.items()}
-
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
@@ -240,41 +254,37 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
             totalweightPB += weightPB
             ns = weightPB*1e3*lumi # number of signal events
 
-            llps = getLLPs(tree.llps,tree.llpDaughters)
             jets = getJets(tree.GenJet,pTmin=25.,etaMax=5.0)
-            jetsDisp = getDisplacedJets(jets,llps)
-            
-            # Event acceptance:
-            highPT_acc = eventAcc(jets,jetsDisp,sr='HighPT')
-            trackless_acc = eventAcc(jets,jetsDisp,sr='Trackless')                        
+            met = tree.GenMissingET.At(0).MET
 
+            # Event acceptance
+            evt_acc = eventAcc(jets,met,metCut=200.0,
+                               maxJetChargedPT=5.0,minJetPt1=70.,
+                               minJetPt2=25.,minPVdistance=4.0)
 
-            cutFlowHighPT["Total"] += ns
-            cutFlowTrackless["Total"] += ns
-            if (not highPT_acc) and (not trackless_acc):
+            cutFlow["Total"] += ns
+            if (not evt_acc):
                 continue
 
-            cutFlowHighPT["Jet selection"] += ns*highPT_acc
-            cutFlowTrackless["Jet selection"] += ns*trackless_acc
-            
-            # Event efficiency
-            highPT_eff = eventEff(jets,llps,sr='HighPT')
-            trackless_eff = eventEff(jets,llps,sr='Trackless')
+            cutFlow["Jet+MET selection"] += ns*evt_acc
 
+            llps = getLLPs(tree.llps,tree.llpDaughters)
             # Vertex acceptances:
             v_acc = np.array([vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,
                                         d0min=2.0,nmin=5,mDVmin=10.0)  for llp in llps])
-
+            good_llps = np.array(llps)[v_acc > 0.0]
+            if len(good_llps) == 0:
+                continue
+            # Event efficiency
+            evt_eff = eventEff(met,good_llps)
             
             # Vertex efficiencies:
             v_eff = np.array([vertexEff(llp) for llp in llps])
-
             
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
             
             # Add to the total weight in each SR:
-            cutFlowHighPT["DV selection"] += ns*highPT_acc*highPT_eff*wvertex
-            cutFlowTrackless["DV selection"] += ns*trackless_acc*trackless_eff*wvertex
+            cutFlow["DV selection"] += ns*evt_acc*evt_eff*wvertex
 
         f.Close()
     progressbar.finish()
@@ -283,37 +293,22 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
     # Compute normalized cutflow
-    for cutFlow in [cutFlowHighPT,cutFlowTrackless]:
-        for key,val in cutFlow.items():
-            if key == 'Total':
-                continue
-            valRound = float('%1.3e' %val)
-            valNorm = float('%1.3e' %(val/cutFlow['Total']))
-            cutFlow[key] = (valRound,valNorm)
-        cutFlow['Total'] = (float('%1.3e' %cutFlow['Total']),1.0)
+    for key,val in cutFlow.items():
+        if key == 'Total':
+            continue
+        valRound = float('%1.3e' %val)
+        valNorm = float('%1.3e' %(val/cutFlow['Total']))
+        cutFlow[key] = (valRound,valNorm)
+    cutFlow['Total'] = (float('%1.3e' %cutFlow['Total']),1.0)
 
     
     # Create a dictionary for storing data
     dataDict = {}
-    dataDict['Luminosity (1/fb)'] = []
-    dataDict['SR'] = []
-    dataDict['$N_s$'] = []
-    dataDict['AccEff'] = []
-    # Signal regions
-    cutFlows = {'HighPT' : cutFlowHighPT, 'Trackless' : cutFlowTrackless}
-    for sr,cutFlow in cutFlows.items():
-        dataDict['Luminosity (1/fb)'].append(lumi)
-        dataDict['SR'].append(sr)
-        dataDict['$N_s$'].append(cutFlow["DV selection"][0])
-        dataDict['AccEff'].append(cutFlow["DV selection"][1])
-        for cut in cutFlow:
-            if cut not in dataDict:
-                dataDict[cut] = []
-            dataDict[cut].append(cutFlow[cut])
-
-    # Expand modelDict to match number of rows in dataDict:
-    for key,val in modelDict.items():
-        modelDict[key] = [val]*len(dataDict['SR'])
+    dataDict['Luminosity (1/fb)'] = lumi
+    dataDict['$N_s$'] = cutFlow["DV selection"][0]
+    dataDict['AccEff'] = cutFlow["DV selection"][1]
+    for cut,val in cutFlow.items():
+        dataDict.setdefault(cut,val)
 
     # Create a dictionary for storing data
     dataDict.update(modelDict)
@@ -349,8 +344,8 @@ if __name__ == "__main__":
     import sys
     LDPATH = subprocess.check_output('echo $LD_LIBRARY_PATH',shell=True,text=True)
     ROOTINC = subprocess.check_output('echo $ROOT_INCLUDE_PATH',shell=True,text=True)
-    pythiaDir = os.path.abspath('./MG5/HEPTools/pythia8/lib')
-    delphesDir = os.path.abspath('./DelphesLLP/external')
+    pythiaDir = os.path.abspath('../ATLAS-SUSY-2018-13/MG5/HEPTools/pythia8/lib')
+    delphesDir = os.path.abspath('../ATLAS-SUSY-2018-13/DelphesLLP/external')
     if pythiaDir not in LDPATH or delphesDir not in ROOTINC:
         print('Enviroment variables not properly set. Run source setenv.sh first.')
         sys.exit()
@@ -363,7 +358,7 @@ if __name__ == "__main__":
     inputFiles = args.inputFile
     outputFile = args.outputFile
     if outputFile is None:
-        outputFile = inputFiles[0].replace('delphes_events.root','atlas_2018_13.pcl')
+        outputFile = inputFiles[0].replace('delphes_events.root','atlas_2016_08.pcl')
 
     if os.path.splitext(outputFile)[1] != '.pcl':
         outputFile = os.path.splitext(outputFile)[0] + '.pcl'

@@ -84,17 +84,18 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = nevtsDict[inputFile]
-        if normalize:
-            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
-        else:
-            norm = 1.0/modelDict['Total MC Events']
+        # if normalize:
+        #     norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        # else:
+        #     norm = 1.0/modelDict['Total MC Events']
+        norm = 1.0
 
         for ievt in range(nevts):    
             
             ntotal += 1
             progressbar.update(ntotal)
             tree.GetEntry(ievt)   
-            weightPB = tree.Weight.At(0).Weight     
+            weightPB = tree.Weight.At(1).Weight     
             weightPB = weightPB*norm
             totalweightPB += weightPB
             ns = weightPB*1e3*lumi # number of signal events
@@ -159,7 +160,7 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
 
     print('Acceptance for %s:' %sr)
     for k,v in cutFlowAcceptance.items():
-        print('%s : %1.1f%%' %(k,v*1e2))
+        print('%s : %1.3f%%' %(k,v*1e2))
     
     return cutFlowAcceptance
 
@@ -179,8 +180,8 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-n', '--normalize', required=False,action='store_true',
             help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
-    ap.add_argument('-m', '--model', required=False,type=str,default='strong',
-            help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino).')
+    ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
+            help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
     ap.add_argument('-s', '--SR', required=False,type=str,default='HighPT',
             help='Defines which signal region should be considered for the cutflow (HighPT or Trackless).')
     ap.add_argument('-N', '--nevts', required=False,type=int,default=-1,

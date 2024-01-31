@@ -616,7 +616,7 @@ module LLPFilter LLPFilter {
   add StatusCode {106} 
   add StatusCode {-106}  
   
-  # Select gluinos
+  # Select sbottoms
   add PdgCode {1000005}
   add PdgCode {-1000005}
 }
