@@ -304,11 +304,11 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
     
     # Create a dictionary for storing data
     dataDict = {}
-    dataDict['Luminosity (1/fb)'] = lumi
-    dataDict['$N_s$'] = cutFlow["DV selection"][0]
-    dataDict['AccEff'] = cutFlow["DV selection"][1]
+    dataDict['Luminosity (1/fb)'] = [lumi]
+    dataDict['$N_s$'] = [cutFlow["DV selection"][0]]
+    dataDict['AccEff'] = [cutFlow["DV selection"][1]]
     for cut,val in cutFlow.items():
-        dataDict.setdefault(cut,val)
+        dataDict.setdefault(cut,[val])
 
     # Create a dictionary for storing data
     dataDict.update(modelDict)
