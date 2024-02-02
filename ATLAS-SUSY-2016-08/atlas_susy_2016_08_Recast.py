@@ -11,7 +11,7 @@ import progressbar as P
 from helper import LLP
 from ATLAS_data.effFunctions import eventEff,vertexEff
 
-delphesDir = os.path.abspath("../ATLAS-SUSY-2018-13/DelphesLLP")
+delphesDir = os.path.abspath("../DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
 
 import ROOT
@@ -24,14 +24,24 @@ ROOT.gInterpreter.Declare('#include "classes/SortableObject.h"')
 ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
-def getLLPs(llpList,daughters,maxMomViolation=5e-2):
+def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=1e-2):
 
     llps = []
     for ip in range(llpList.GetEntries()):
         p = llpList.At(ip)        
-        # Get all daughters
-        llp_daughters = [daughters.At(d) for d in range(p.D1,p.D2+1)]
-        llps.append(LLP(p,llp_daughters,maxMomViolation))
+        # Get direct daughters
+        llp_ddaughters = []        
+        for d in directDaughters:
+            if d.M1 == ip:
+                llp_ddaughters.append(d)
+        # Get final daughters
+        llp_fdaughters = []
+        for d in finalDaughters:
+            if d.M1 == ip:
+                llp_fdaughters.append(d)
+        
+        # Get final daughters
+        llps.append(LLP(p,llp_ddaughters,llp_fdaughters,maxMomViolation))
         
     return llps
 
@@ -268,7 +278,7 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
 
             cutFlow["Jet+MET selection"] += ns*evt_acc
 
-            llps = getLLPs(tree.llps,tree.llpDaughters)
+            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
             # Vertex acceptances:
             v_acc = np.array([vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,
                                         d0min=2.0,nmin=5,mDVmin=10.0)  for llp in llps])
@@ -344,8 +354,8 @@ if __name__ == "__main__":
     import sys
     LDPATH = subprocess.check_output('echo $LD_LIBRARY_PATH',shell=True,text=True)
     ROOTINC = subprocess.check_output('echo $ROOT_INCLUDE_PATH',shell=True,text=True)
-    pythiaDir = os.path.abspath('../ATLAS-SUSY-2018-13/MG5/HEPTools/pythia8/lib')
-    delphesDir = os.path.abspath('../ATLAS-SUSY-2018-13/DelphesLLP/external')
+    pythiaDir = os.path.abspath('../MG5/HEPTools/pythia8/lib')
+    delphesDir = os.path.abspath('../DelphesLLP/external')
     if pythiaDir not in LDPATH or delphesDir not in ROOTINC:
         print('Enviroment variables not properly set. Run source setenv.sh first.')
         sys.exit()

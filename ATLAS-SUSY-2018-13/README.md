@@ -12,7 +12,7 @@ using the efficiency grids  for event and vertex reconstruction selection provid
 The following pre-requisites must be installed before compiling the main code:
 
   * [MadGraph5](https://launchpad.net/mg5amcnlo) with [Pythia8](https://pythia.org/) installed
-  * [Modified Delphes](./DelphesLLP.tar.gz)
+  * [Modified Delphes](../DelphesLLP.tar.gz)
   
 ## Installation ##
 
