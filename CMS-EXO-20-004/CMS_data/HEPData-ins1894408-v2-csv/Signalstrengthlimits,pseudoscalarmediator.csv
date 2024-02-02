@@ -1,0 +1,122 @@
+#: table_doi: 10.17182/hepdata.106115.v2/t49
+#: name: Signal strength limits, pseudoscalar mediator
+#: description: Exclusion limits on the signal strength in the simplified model with pseudoscalar couplings.
+#: data_file: signal_strength_limits,_pseudoscalar_mediator.yaml
+#: keyword reactions: P P --> INVISIBLE JET | P P --> INVISIBLE JET JET | P P --> INVISIBLE Z0
+#: keyword phrases: Dark matter | DM | DMsimp | Simplified model
+#: keyword observables: CLS | SIG
+#: keyword cmenergies: 13000.0
+#: Quantile,Observed
+#: Mediator,pseudoscalar
+#: $g_{q}$,1.0
+#: $g_{\chi}$,1.0
+#: $m_{DM}$ [GeV],1.0
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Signal strength limit
+50.0,0.8142
+100.0,0.75882
+200.0,0.68716
+300.0,0.51437
+350.0,0.35954
+400.0,0.55905
+450.0,0.87013
+500.0,1.207
+600.0,2.4252
+700.0,4.1463
+800.0,6.6158
+
+#: Quantile,Median expected
+#: Mediator,pseudoscalar
+#: $g_{q}$,1.0
+#: $g_{\chi}$,1.0
+#: $m_{DM}$ [GeV],1.0
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Signal strength limit
+50.0,0.62695
+100.0,0.61719
+200.0,0.58789
+300.0,0.45508
+350.0,0.36035
+400.0,0.56836
+450.0,0.78516
+500.0,1.043
+600.0,1.7109
+700.0,2.7422
+800.0,4.1406
+
+#: Quantile,Expected plus 1 s.d.
+#: Mediator,pseudoscalar
+#: $g_{q}$,1.0
+#: $g_{\chi}$,1.0
+#: $m_{DM}$ [GeV],1.0
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Signal strength limit
+50.0,0.87936
+100.0,0.86566
+200.0,0.82457
+300.0,0.63829
+350.0,0.50543
+400.0,0.79718
+450.0,1.1013
+500.0,1.4629
+600.0,2.4134
+700.0,3.868
+800.0,5.8406
+
+#: Quantile,Expected plus 2 s.d.
+#: Mediator,pseudoscalar
+#: $g_{q}$,1.0
+#: $g_{\chi}$,1.0
+#: $m_{DM}$ [GeV],1.0
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Signal strength limit
+50.0,1.1803
+100.0,1.1619
+200.0,1.1143
+300.0,0.86253
+350.0,0.68069
+400.0,1.0772
+450.0,1.4881
+500.0,1.9768
+600.0,3.2742
+700.0,5.2476
+800.0,7.9765
+
+#: Quantile,Expected minus 1 s.d.
+#: Mediator,pseudoscalar
+#: $g_{q}$,1.0
+#: $g_{\chi}$,1.0
+#: $m_{DM}$ [GeV],1.0
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Signal strength limit
+50.0,0.45085
+100.0,0.44383
+200.0,0.42276
+300.0,0.32725
+350.0,0.25913
+400.0,0.40667
+450.0,0.56462
+500.0,0.74753
+600.0,1.2304
+700.0,1.9621
+800.0,2.9677
+
+#: Quantile,Expected minus 2 s.d.
+#: Mediator,pseudoscalar
+#: $g_{q}$,1.0
+#: $g_{\chi}$,1.0
+#: $m_{DM}$ [GeV],1.0
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Signal strength limit
+50.0,0.33797
+100.0,0.3327
+200.0,0.31691
+300.0,0.24532
+350.0,0.19425
+400.0,0.30638
+450.0,0.42325
+500.0,0.55815
+600.0,0.9223
+700.0,1.4782
+800.0,2.2159
+

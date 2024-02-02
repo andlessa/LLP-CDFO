@@ -1,0 +1,116 @@
+#: table_doi: 10.17182/hepdata.106115.v2/t45
+#: name: Coupling limits on $g_{q}$, axial mediator
+#: description: Upper limits on the coupling $g_{q}$ in the simplified model with a axial mediator.
+#: data_file: coupling_limits_on_$g_{q}$,_axial_mediator.yaml
+#: keyword reactions: P P --> INVISIBLE JET | P P --> INVISIBLE JET JET | P P --> INVISIBLE W+ | P P --> INVISIBLE W- | P P --> INVISIBLE Z0
+#: keyword phrases: Dark matter | DM | DMsimp | Simplified model | Coupling | Coupling limit
+#: keyword observables: CLS | GA
+#: keyword cmenergies: 13000.0
+#: Quantile,Observed
+#: Coupling type,axial
+#: $g_{q}$,1.0
+#: $m_{DM}$,$m_{med}/3$
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Coupling limit
+100.0,0.022194
+250.0,0.024782
+500.0,0.036981
+750.0,0.053741
+1000.0,0.079587
+1250.0,0.11434
+1500.0,0.167
+1750.0,0.28173
+2000.0,-
+2250.0,-
+2500.0,-
+
+#: Quantile,Median expected
+#: Coupling type,axial
+#: $g_{q}$,1.0
+#: $m_{DM}$,$m_{med}/3$
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Coupling limit
+100.0,0.01792
+250.0,0.021836
+500.0,0.029826
+750.0,0.04296
+1000.0,0.059738
+1250.0,0.083768
+1500.0,0.11742
+1750.0,0.1671
+2000.0,0.29329
+2250.0,3.0134
+2500.0,-
+
+#: Quantile,Expected plus 1 s.d.
+#: Coupling type,axial
+#: $g_{q}$,1.0
+#: $m_{DM}$,$m_{med}/3$
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Coupling limit
+100.0,0.021243
+250.0,0.025972
+500.0,0.035631
+750.0,0.051508
+1000.0,0.072318
+1250.0,0.1028
+1500.0,0.1482
+1750.0,0.22607
+2000.0,0.60313
+2250.0,-
+2500.0,-
+
+#: Quantile,Expected plus 2 s.d.
+#: Coupling type,axial
+#: $g_{q}$,1.0
+#: $m_{DM}$,$m_{med}/3$
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Coupling limit
+100.0,0.024724
+250.0,0.030306
+500.0,0.041877
+750.0,0.06082
+1000.0,0.086633
+1250.0,0.12582
+1500.0,0.19015
+1750.0,0.33174
+2000.0,-
+2250.0,-
+2500.0,-
+
+#: Quantile,Expected minus 1 s.d.
+#: Coupling type,axial
+#: $g_{q}$,1.0
+#: $m_{DM}$,$m_{med}/3$
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Coupling limit
+100.0,0.015186
+250.0,0.018452
+500.0,0.025178
+750.0,0.036147
+1000.0,0.050046
+1250.0,0.069385
+1500.0,0.095659
+1750.0,0.1317
+2000.0,0.20571
+2250.0,0.36661
+2500.0,-
+
+#: Quantile,Expected minus 2 s.d.
+#: Coupling type,axial
+#: $g_{q}$,1.0
+#: $m_{DM}$,$m_{med}/3$
+#: Integrated luminosity [fb$^{-1}$],137
+$m_{med}$ [GeV],Coupling limit
+100.0,0.013142
+250.0,0.016006
+500.0,0.021827
+750.0,0.031083
+1000.0,0.042918
+1250.0,0.059355
+1500.0,0.081058
+1750.0,0.10967
+2000.0,0.16298
+2250.0,0.25001
+2500.0,0.57537
+

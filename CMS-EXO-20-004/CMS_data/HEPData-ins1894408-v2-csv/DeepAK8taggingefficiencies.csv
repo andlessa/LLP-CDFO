@@ -1,0 +1,140 @@
+#: table_doi: 10.17182/hepdata.106115.v2/t55
+#: name: DeepAK8 tagging efficiencies
+#: description: Tagging efficiency for AK8 jets. The efficiency includes the effect of the machine-learning based DeepAK8 tagger, as well as the application of the mass window requirement on the jet. The efficiency is split depending on the matching generator-level object. For reinterpretation purposes, this efficiency can directly be applied to any AK8 jet that is matched to a given type of generator-level object, with no prior selection on the jet mass. Other acceptance requirements on jet $\p_{T}$ and $\eta$ should still be applied.
+#: data_file: deepak8_tagging_efficiencies.yaml
+#: keyword observables: EFF | ACC
+#: keyword reactions: P P --> Z0 | P P --> W+ | P P --> W- | P P --> JET JET
+#: keyword phrases: DeepAK8 | Jet tagging | mono-V
+#: keyword cmenergies: 13000.0
+#: Process,,,W(qq)
+#: Data-taking period,,,2017
+#: Working point,,,loose
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.3678
+310.0,280.0,340.0,0.34679
+370.0,340.0,400.0,0.32121
+450.0,400.0,500.0,0.31074
+550.0,500.0,600.0,0.27667
+800.0,600.0,1000.0,0.2015
+
+#: Process,,,Z(qq)
+#: Data-taking period,,,2017
+#: Working point,,,loose
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.39151
+310.0,280.0,340.0,0.39067
+370.0,340.0,400.0,0.40571
+450.0,400.0,500.0,0.41643
+550.0,500.0,600.0,0.41497
+800.0,600.0,1000.0,0.38375
+
+#: Process,,,QCD jets
+#: Data-taking period,,,2017
+#: Working point,,,loose
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.076133
+310.0,280.0,340.0,0.075477
+370.0,340.0,400.0,0.070042
+450.0,400.0,500.0,0.059684
+550.0,500.0,600.0,0.050132
+800.0,600.0,1000.0,0.038844
+
+#: Process,,,W(qq)
+#: Data-taking period,,,2017
+#: Working point,,,tight
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.39348
+310.0,280.0,340.0,0.39183
+370.0,340.0,400.0,0.39125
+450.0,400.0,500.0,0.43947
+550.0,500.0,600.0,0.45129
+800.0,600.0,1000.0,0.53555
+
+#: Process,,,Z(qq)
+#: Data-taking period,,,2017
+#: Working point,,,tight
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.24201
+310.0,280.0,340.0,0.2542
+370.0,340.0,400.0,0.21204
+450.0,400.0,500.0,0.2547
+550.0,500.0,600.0,0.27791
+800.0,600.0,1000.0,0.31851
+
+#: Process,,,QCD jets
+#: Data-taking period,,,2017
+#: Working point,,,tight
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.006829
+310.0,280.0,340.0,0.0072018
+370.0,340.0,400.0,0.0073174
+450.0,400.0,500.0,0.0075747
+550.0,500.0,600.0,0.0079795
+800.0,600.0,1000.0,0.0087
+
+#: Process,,,W(qq)
+#: Data-taking period,,,2018
+#: Working point,,,loose
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.33101
+310.0,280.0,340.0,0.34876
+370.0,340.0,400.0,0.32216
+450.0,400.0,500.0,0.31572
+550.0,500.0,600.0,0.2955
+800.0,600.0,1000.0,0.21031
+
+#: Process,,,Z(qq)
+#: Data-taking period,,,2018
+#: Working point,,,loose
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.38728
+310.0,280.0,340.0,0.41739
+370.0,340.0,400.0,0.4177
+450.0,400.0,500.0,0.41929
+550.0,500.0,600.0,0.40693
+800.0,600.0,1000.0,0.3419
+
+#: Process,,,QCD jets
+#: Data-taking period,,,2018
+#: Working point,,,loose
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.069982
+310.0,280.0,340.0,0.071489
+370.0,340.0,400.0,0.068592
+450.0,400.0,500.0,0.061791
+550.0,500.0,600.0,0.0538
+800.0,600.0,1000.0,0.047218
+
+#: Process,,,W(qq)
+#: Data-taking period,,,2018
+#: Working point,,,tight
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.36363
+310.0,280.0,340.0,0.38633
+370.0,340.0,400.0,0.41993
+450.0,400.0,500.0,0.43365
+550.0,500.0,600.0,0.45875
+800.0,600.0,1000.0,0.55363
+
+#: Process,,,Z(qq)
+#: Data-taking period,,,2018
+#: Working point,,,tight
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.21345
+310.0,280.0,340.0,0.23821
+370.0,340.0,400.0,0.24997
+450.0,400.0,500.0,0.25697
+550.0,500.0,600.0,0.269
+800.0,600.0,1000.0,0.34084
+
+#: Process,,,QCD jets
+#: Data-taking period,,,2018
+#: Working point,,,tight
+AK8 jet $p_{T}$ [GeV],AK8 jet $p_{T}$ [GeV] LOW,AK8 jet $p_{T}$ [GeV] HIGH,Efficiency
+260.0,240.0,280.0,0.0066875
+310.0,280.0,340.0,0.0065475
+370.0,340.0,400.0,0.0061736
+450.0,400.0,500.0,0.0056533
+550.0,500.0,600.0,0.0053516
+800.0,600.0,1000.0,0.0048735
+

@@ -1,0 +1,68 @@
+#: table_doi: 10.17182/hepdata.106115.v2/t50
+#: name: ADD $M_{D}$ limits
+#: description: Exclusion limits on the fundamental Planck scale $M_{D}$ as a function of the number of extra dimensions $d$.
+#: data_file: add_$m_{d}$_limits.yaml
+#: keyword reactions: P P --> INVISIBLE JET
+#: keyword phrases: ADD | Extra dimensions | Graviton
+#: keyword observables: CLS | SIG
+#: keyword cmenergies: 13000.0
+#: Quantile,Median Expected
+#: Integrated luminosity [fb$^{-1}$],137
+d,Lower limit on $M_{D} [TeV]
+2,12.188
+3,9.0221
+4,7.4084
+5,6.5468
+6,5.9384
+7,5.5523
+
+#: Quantile,Observed
+#: Integrated luminosity [fb$^{-1}$],137
+d,Lower limit on $M_{D} [TeV]
+2,10.692
+3,8.0353
+4,6.7477
+5,6.0048
+6,5.5009
+7,5.159
+
+#: Quantile,Expected plus 1 s.d.
+#: Integrated luminosity [fb$^{-1}$],137
+d,Lower limit on $M_{D} [TeV]
+2,11.243
+3,8.3634
+4,6.9356
+5,6.2018
+6,5.6509
+7,5.2923
+
+#: Quantile,Expected minus 1 s.d.
+#: Integrated luminosity [fb$^{-1}$],137
+d,Lower limit on $M_{D} [TeV]
+2,13.078
+3,9.6789
+4,7.8711
+5,6.8719
+6,6.2278
+7,5.799
+
+#: Quantile,Expected plus 2 s.d.
+#: Integrated luminosity [fb$^{-1}$],137
+d,Lower limit on $M_{D} [TeV]
+2,10.341
+3,7.7893
+4,6.5635
+5,5.8829
+6,5.3795
+7,5.0467
+
+#: Quantile,Expected minus 2 s.d.
+#: Integrated luminosity [fb$^{-1}$],137
+d,Lower limit on $M_{D} [TeV]
+2,13.838
+3,10.262
+4,8.2657
+5,7.1511
+6,6.4806
+7,6.0114
+

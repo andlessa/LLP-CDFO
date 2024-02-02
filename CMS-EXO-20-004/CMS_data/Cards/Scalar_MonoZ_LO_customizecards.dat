@@ -1,0 +1,12 @@
+set param_card MXd 1.
+set param_card MY0 100.
+set param_card WY0 auto
+set param_card gSb 0.00001
+set param_card gSh1 0.00001
+set param_card GC_20 0
+set param_card GC_28 0
+set param_card GC_102 0
+set param_card GC_80 0
+set param_card GC_82 0
+set param_card GC_111 0
+

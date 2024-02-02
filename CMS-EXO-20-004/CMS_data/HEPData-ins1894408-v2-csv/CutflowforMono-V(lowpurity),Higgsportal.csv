@@ -1,0 +1,168 @@
+#: table_doi: 10.17182/hepdata.106115.v2/t28
+#: name: Cut flow for Mono-V (low purity), Higgs portal
+#: description: Unweighted signal acceptance times efficiency at every cut stage. The requirements called "HCAL mitigation" refer to the requirements imposed in the 2018 data set in order to mitigate the localized failure of the HCAL detector.
+#: data_file: cut_flow_for_mono-v_(low_purity),_higgs_portal.yaml
+#: keyword reactions: P P --> INVISIBLE JET JET
+#: keyword phrases: H(inv) | Higgs invisible
+#: keyword cmenergies: 13000.0
+#: Data-taking period,2017
+#: Mode,VBF
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.18189
+$p_{T}^{miss} > 250$ GeV,0.033247
+$p_{T}^{miss}$ quality filters,0.033176
+Electron veto,0.033114
+Muon veto,0.033034
+Tau veto,0.0323
+B jet veto,0.0323
+Photon veto,0.0321
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.030748
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.030582
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.012725
+Leading AK8 jet energy fractions,0.012725
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.0012819
+HCAL mitigation (jets),0.0012819
+HCAL mitigation ($\phi^{miss}$),0.0012819
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",0.0012819
+Leading AK8 jet DeepAK8 tag (low-purity),0.00072146
+
+#: Data-taking period,2018
+#: Mode,VBF
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.15496
+$p_{T}^{miss} > 250$ GeV,0.030849
+$p_{T}^{miss}$ quality filters,0.030798
+Electron veto,0.030718
+Muon veto,0.030633
+Tau veto,0.029882
+B jet veto,0.029882
+Photon veto,0.029694
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.028584
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.028544
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.012828
+Leading AK8 jet energy fractions,0.012828
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.0012665
+HCAL mitigation (jets),0.0011922
+HCAL mitigation ($\phi^{miss}$),0.0010334
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",0.0010334
+Leading AK8 jet DeepAK8 tag (low-purity),0.00061724
+
+#: Data-taking period,2017
+#: Mode,ZH
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.1552
+$p_{T}^{miss} > 250$ GeV,0.033206
+$p_{T}^{miss}$ quality filters,0.033157
+Electron veto,0.033053
+Muon veto,0.032939
+Tau veto,0.031545
+B jet veto,0.031545
+Photon veto,0.031402
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.028785
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.028575
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.019716
+Leading AK8 jet energy fractions,0.019716
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.01339
+HCAL mitigation (jets),0.01339
+HCAL mitigation ($\phi^{miss}$),0.01339
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",0.013389
+Leading AK8 jet DeepAK8 tag (low-purity),0.0063596
+
+#: Data-taking period,2018
+#: Mode,ZH
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.13892
+$p_{T}^{miss} > 250$ GeV,0.031794
+$p_{T}^{miss}$ quality filters,0.031759
+Electron veto,0.031666
+Muon veto,0.031558
+Tau veto,0.030212
+B jet veto,0.030212
+Photon veto,0.030073
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.027631
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.027548
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.019612
+Leading AK8 jet energy fractions,0.019612
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.013413
+HCAL mitigation (jets),0.012918
+HCAL mitigation ($\phi^{miss}$),0.011075
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",0.011074
+Leading AK8 jet DeepAK8 tag (low-purity),0.0053739
+
+#: Data-taking period,2017
+#: Mode,gluon fusion
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.97525
+$p_{T}^{miss} > 250$ GeV,0.45265
+$p_{T}^{miss}$ quality filters,0.45206
+Electron veto,0.45114
+Muon veto,0.4499
+Tau veto,0.44015
+B jet veto,0.44015
+Photon veto,0.43822
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.41238
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.41006
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.24593
+Leading AK8 jet energy fractions,0.24593
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.039583
+HCAL mitigation (jets),0.039583
+HCAL mitigation ($\phi^{miss}$),0.039583
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",0.039582
+Leading AK8 jet DeepAK8 tag (low-purity),0.016385
+
+#: Data-taking period,2018
+#: Mode,gluon fusion
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.96893
+$p_{T}^{miss} > 250$ GeV,0.44766
+$p_{T}^{miss}$ quality filters,0.4473
+Electron veto,0.44653
+Muon veto,0.44544
+Tau veto,0.43578
+B jet veto,0.43578
+Photon veto,0.43388
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.40887
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.40769
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.24913
+Leading AK8 jet energy fractions,0.24913
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.040641
+HCAL mitigation (jets),0.038628
+HCAL mitigation ($\phi^{miss}$),0.032784
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",0.032783
+Leading AK8 jet DeepAK8 tag (low-purity),0.013963
+
+#: Data-taking period,2018
+#: Mode,VBF
+#: $m_{H}$ [GeV],125
+Cut stage,Fraction of passing events
+Full sample,1.0
+Trigger emulation,0.062183
+$p_{T}^{miss} > 250$ GeV,0.014417
+$p_{T}^{miss}$ quality filters,0.014319
+Electron veto,0.013853
+Muon veto,0.013658
+Tau veto,0.012914
+B jet veto,0.012914
+Photon veto,0.0024677
+"$\Delta\phi(jet,p_{T}^{miss}) > 0.5$ rad",0.002244
+$\Delta p_{T}^{miss}$ (PF-Calorimeter) $< 0.5$ rad,0.0022371
+Leading AK8 jet $p_{T} > 200$ GeV and $\eta < 2.4$,0.0010053
+Leading AK8 jet energy fractions,0.0010053
+Leading AK8 jet $65<m_{SD}<105$ GeV,0.000101
+HCAL mitigation (jets),9.5968e-05
+HCAL mitigation ($\phi^{miss}$),8.0876e-05
+"$\Delta\phi(\mathrm{PF},\mathrm{Charged}) < 2.0$ rad",8.0876e-05
+Leading AK8 jet DeepAK8 tag (low-purity),4.6436e-05
+

@@ -1,0 +1,79 @@
+#: table_doi: 10.17182/hepdata.106115.v2/t17
+#: name: Simplified likelihood: Yields (Mono-V)
+#: description: Background prediction and observed data yields in the signal region bins. The background yields are obtained from the background-only fit to the corresponding control regions, and serve as input to the simplified likelihood reinterpretation scheme.
+#: data_file: simplified_likelihood:_yields_(mono-v).yaml
+#: keyword cmenergies: 13000.0
+Bin,Background yield
+monovtau21_2016_bin0,9812.890625
+monovtau21_2016_bin1,6159.333038
+monovtau21_2016_bin2,2988.126183
+monovtau21_2016_bin3,2165.122223
+monovtau21_2016_bin4,535.5971336
+monovtau21_2016_bin5,207.4850321
+monovtau21_2016_bin6,55.29980734
+monovloose_2017_bin0,11076.68762
+monovloose_2017_bin1,7064.745331
+monovloose_2017_bin2,3499.20311
+monovloose_2017_bin3,2487.58316
+monovloose_2017_bin4,633.129406
+monovloose_2017_bin5,235.7484519
+monovloose_2017_bin6,68.42017919
+monovloose_2018_bin0,11274.60403
+monovloose_2018_bin1,7044.62204
+monovloose_2018_bin2,3468.024063
+monovloose_2018_bin3,2564.531136
+monovloose_2018_bin4,778.8063049
+monovloose_2018_bin5,291.0914719
+monovloose_2018_bin6,90.97675979
+monovtight_2017_bin0,1454.118443
+monovtight_2017_bin1,870.4966545
+monovtight_2017_bin2,491.6394234
+monovtight_2017_bin3,367.1644926
+monovtight_2017_bin4,104.9295783
+monovtight_2017_bin5,46.48116231
+monovtight_2017_bin6,18.99657585
+monovtight_2018_bin0,1611.879921
+monovtight_2018_bin1,1012.054825
+monovtight_2018_bin2,471.7142105
+monovtight_2018_bin3,373.8806725
+monovtight_2018_bin4,135.39114
+monovtight_2018_bin5,60.18458158
+monovtight_2018_bin6,17.29298756
+
+Bin,Data yield
+monovtau21_2016_bin0,9929
+monovtau21_2016_bin1,6057
+monovtau21_2016_bin2,3041
+monovtau21_2016_bin3,2131
+monovtau21_2016_bin4,521
+monovtau21_2016_bin5,225
+monovtau21_2016_bin6,61
+monovloose_2017_bin0,11108
+monovloose_2017_bin1,6980
+monovloose_2017_bin2,3408
+monovloose_2017_bin3,2414
+monovloose_2017_bin4,604
+monovloose_2017_bin5,219
+monovloose_2017_bin6,68
+monovloose_2018_bin0,12154
+monovloose_2018_bin1,7433
+monovloose_2018_bin2,3656
+monovloose_2018_bin3,2711
+monovloose_2018_bin4,832
+monovloose_2018_bin5,315
+monovloose_2018_bin6,102
+monovtight_2017_bin0,1673
+monovtight_2017_bin1,925
+monovtight_2017_bin2,440
+monovtight_2017_bin3,333
+monovtight_2017_bin4,96
+monovtight_2017_bin5,45
+monovtight_2017_bin6,12
+monovtight_2018_bin0,1828
+monovtight_2018_bin1,1016
+monovtight_2018_bin2,513
+monovtight_2018_bin3,396
+monovtight_2018_bin4,130
+monovtight_2018_bin5,48
+monovtight_2018_bin6,21
+
