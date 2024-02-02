@@ -18,14 +18,14 @@ def computeULs(inputFile,outputFile,deltas=0.0):
 
 
     # ### Load CMS data
-    cmsYieldFile = './AuxInfo/CMS-EXO-20-004-data/HEPData-ins1894408-v2-csv/Simplifiedlikelihood:Yields(Monojet).csv'
+    cmsYieldFile = './CMS_data/HEPData-ins1894408-v2-csv/Simplifiedlikelihood:Yields(Monojet).csv'
     bgYields = np.genfromtxt(cmsYieldFile,delimiter=',',skip_header=5,
                             skip_footer=67,names=True,dtype=None,encoding=None)
 
     dataYields = np.genfromtxt(cmsYieldFile,delimiter=',',skip_header=73,
                             names=True,dtype=None,encoding=None)
 
-    covarianceFile = './AuxInfo/CMS-EXO-20-004-data/HEPData-ins1894408-v2-csv/Simplifiedlikelihood:covariancematrix(Monojet).csv'
+    covarianceFile = './CMS_data/HEPData-ins1894408-v2-csv/Simplifiedlikelihood:covariancematrix(Monojet).csv'
     cov = np.genfromtxt(covarianceFile,delimiter=',',skip_header=5,
                             names=True,dtype=None,encoding='UTF-8')
 
@@ -51,13 +51,7 @@ def computeULs(inputFile,outputFile,deltas=0.0):
     # ### Get all model points
     models = []
 
-    if recastData['Coupling'].iloc[0] == 'ADD':
-        mCols = ['Coupling','Mode','$M_{D}$','$d$']
-    elif recastData['Coupling'].iloc[0].lower() == 'stop':
-        mCols = ['Coupling','Mode','$m_{\tilde t}$','$m_{\tilde \chi_1^0}$']
-    else:
-        mCols = ['Coupling','Mode','$m_{med}$','$m_{DM}$']
-
+    mCols = ['$m_{\tilde b}$','$m_{\tilde \chi_1^0}$']
     
     for row in recastData[mCols].values:
         m = dict(zip(mCols,row.tolist()))

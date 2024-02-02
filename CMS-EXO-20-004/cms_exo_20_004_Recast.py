@@ -8,7 +8,7 @@ import pyslha
 import time
 import progressbar as P
 
-delphesDir = os.path.abspath("../../MG5/Delphes")
+delphesDir = os.path.abspath("../DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
 
 import ROOT
@@ -91,88 +91,12 @@ def getModelDict(inputFiles):
     xroot = xtree.getroot()
     slha = xroot.find('header').find('slha').text
     pars = pyslha.readSLHA(slha)
-    if 55 in pars.blocks['MASS']:
-        model = 'spin1'
-        mMed = pars.blocks['MASS'][55]
-    elif 54 in pars.blocks['MASS']:
-        model = 'spin0'
-        mMed = pars.blocks['MASS'][54]
-    elif 5000039 in pars.blocks['MASS']:
-        model = 'ADD'
-        mMed = pars.blocks['MASS'][5000039]
-    elif 5000002 in pars.blocks['MASS']:
-        model = 'stop'
-        mMed = pars.blocks['MASS'][5000002]
-
-    if model in ['spin1','spin0']:
-        mDM = pars.blocks['MASS'][52]
-    elif model in ['stop']:
-        mDM = pars.blocks['MASS'][5000012]
-    else:
-        mDM = None
-
-    if model == 'spin1':
-        gVq = pars.blocks['DMINPUTS'][4] # Mediator-quark vector coupling
-        gAq = pars.blocks['DMINPUTS'][10] # Mediator-quark axial coupling
-        gVx = pars.blocks['DMINPUTS'][2] # Mediator-DM vector coupling
-        gAx = pars.blocks['DMINPUTS'][3] # Mediator-DM axial coupling
-    elif model == 'spin0':
-        gVq = pars.blocks['DMINPUTS'][6] # Mediator-quark scalar coupling
-        gAq = pars.blocks['DMINPUTS'][12] # Mediator-quark pseudoscalar coupling
-        gVx = pars.blocks['DMINPUTS'][3] # Mediator-DM scalar coupling
-        gAx = pars.blocks['DMINPUTS'][4] # Mediator-DM pseudoscalar coupling
-    elif model == 'ADD':
-        MD = pars.blocks['ADDINPUTS'][1] # Fundamental Planck scale in large extra dimensions
-        d = pars.blocks['ADDINPUTS'][2] # Number of extra dimentions
-    elif model == 'stop':
-        yDM = pars.blocks['FRBLOCK'][1] # Fundamental Planck scale in large extra dimensions
-    
+    mDM = pars.blocks['MASS'][1000022]
+    mMed = pars.blocks['MASS'][1000005]
     print('\nModel parameters:')
-    if model in ['spin1','spin0']:
-        print('mMed = %1.2f GeV, mDM = %1.2f GeV, gVq = %1.2f, gAq = %1.2f, gVx = %1.2f, gAx = %1.2f\n' 
-            %(mMed,mDM,gVq,gAq,gVx,gAx))
-    elif model == 'ADD':
-        print('MD = %1.2f GeV, d = %1.2f\n'  %(MD,d))
-    elif model == 'stop':
-        print('Mstop = %1.2f GeV, mDM = %1.2f, yDM = %1.1f \n'  %(mMed,mDM,yDM))
-
-
-    # #### Store data
-    if model in ['spin1','spin0']:
-        if gVx != 0:
-            if model == 'spin1':
-                modelDict['Coupling'] = 'Vector'
-            elif model == 'spin0':
-                modelDict['Coupling'] = 'Scalar'
-        else:
-            if model == 'spin1':
-                modelDict['Coupling'] = 'Axial'
-            elif model == 'spin0':
-                modelDict['Coupling'] = 'Pseudoscalar'
-    elif model == 'ADD':
-        modelDict['Coupling'] = 'ADD'
-    elif model == 'stop':
-        modelDict['Coupling'] = 'Stop'
-
-
-    modelDict['Mode'] = 'DM+QCDjets'
-
-    if model in ['spin1','spin0']:
-        modelDict['$m_{med}$'] = mMed
-        modelDict['$m_{DM}$'] = mDM
-        if (modelDict['Coupling'] == 'Vector') or (modelDict['Coupling'] == 'Scalar'):
-            modelDict['$g_{DM}$'] = gVx
-            modelDict['$g_{q}$'] = gVq
-        else:
-            modelDict['$g_{DM}$'] = gAx
-            modelDict['$g_{q}$'] = gAq
-    elif model == 'ADD':
-        modelDict['$M_{D}$'] = MD
-        modelDict['$d$'] = d
-    elif model == 'stop':
-        modelDict['$m_{\tilde t}$'] = mMed
-        modelDict['$m_{\tilde \chi_1^0}$'] = mDM
-        modelDict['$y_{DM}$'] = yDM
+    print('Msbottom = %1.2f GeV, mDM = %1.2f \n'  %(mMed,mDM))
+    modelDict['$m_{\tilde b}$'] = mMed
+    modelDict['$m_{\tilde \chi_1^0}$'] = mDM
 
     return modelDict
 

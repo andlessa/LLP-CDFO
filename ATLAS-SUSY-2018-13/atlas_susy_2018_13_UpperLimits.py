@@ -4,6 +4,8 @@ import pandas as pd
 import time,os,sys
 import pandas as pd
 import numpy as np
+import sys
+sys.path.append('../')
 from statisticalTools.simplifiedLikelihoods import Data,UpperLimitComputer
 
 def computeULs(inputFile,outputFile,kfactor=1.0,deltas=0.25):
