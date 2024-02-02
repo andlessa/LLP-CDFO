@@ -275,7 +275,7 @@ module SimpleCalorimeter ECal {
   add EnergyFraction {14} {0.0}
   add EnergyFraction {16} {0.0}
   add EnergyFraction {1000022} {0.0}
-  add EnergyFraction {1000021} {0.0}
+  add EnergyFraction {1000005} {0.0}
   add EnergyFraction {1000039} {0.0}  
   add EnergyFraction {1000023} {0.0}
   add EnergyFraction {1000025} {0.0}
@@ -370,7 +370,7 @@ module SimpleCalorimeter HCal {
   add EnergyFraction {14} {0.0}
   add EnergyFraction {16} {0.0}
   add EnergyFraction {1000022} {0.0}
-  add EnergyFraction {1000021} {0.0}
+  add EnergyFraction {1000005} {0.0}
   add EnergyFraction {1000039} {0.0}  
   add EnergyFraction {1000023} {0.0}
   add EnergyFraction {1000025} {0.0}
@@ -618,9 +618,9 @@ module BSMFilter BSMFilter {
   add StatusCode {106} 
   add StatusCode {-106}  
   
-  # Select gluinos
-  add PdgCode {1000021}
-  add PdgCode {-1000021}
+  # Select sbottoms
+  add PdgCode {1000005}
+  add PdgCode {-1000005}
 }
 
 
@@ -667,7 +667,7 @@ module PdgCodeFilter JetFilter {
   add PdgCode {-13}
   # Exclude neutralinos
   add PdgCode {1000022}
-  add PdgCode {1000021}
+  add PdgCode {1000005}
 
 }
 
