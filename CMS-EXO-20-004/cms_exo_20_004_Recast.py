@@ -97,6 +97,7 @@ def getModelDict(inputFiles):
     print('Msbottom = %1.2f GeV, mDM = %1.2f \n'  %(mMed,mDM))
     modelDict['$m_{\tilde b}$'] = mMed
     modelDict['$m_{\tilde \chi_1^0}$'] = mDM
+    modelDict['Coupling'] = 'sbottom'
 
     return modelDict
 

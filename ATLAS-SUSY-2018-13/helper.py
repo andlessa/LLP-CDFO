@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 
-import os,glob
+import os
 from typing import Any
 import numpy as np
-import glob
-import itertools
+from scipy.interpolate import interp1d
+from pathlib import Path
+
+
+xsecF = os.path.expanduser('~/LLP-CDFO/xsecs_sbottom.csv')
+xsec_data = np.genfromtxt(xsecF,delimiter=',',names=True)
+xsecFF = interp1d(xsec_data['Mass_of_stopssbottoms_GeV'],xsec_data['Cross_section_pb'],fill_value='extrapolate')
+xsecF = lambda x: xsecFF(x)[()]
 
 
 class LLP(object):
@@ -120,5 +126,3 @@ class BinnedData(object):
         if ibin is not None:
             self.values[ibin[0],ibin[1]] += weight
 
-    
-        

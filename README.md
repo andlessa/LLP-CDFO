@@ -10,3 +10,8 @@ Code for the CDFO LLP project
  * [ADL Repo](https://github.com/ADL4HEP/ADLLHCanalyses)
  * [Cutlang Repo](https://github.com/unelg/CutLang)
  * [ADL - DT Draft](https://github.com/ADL4HEP/ADLCMSSUSY/tree/main/CMS-SUS-21-006)
+
+
+### Les Houches Summary Plot
+
+![Alt text](LesHouchesSummary.png?raw=true "Summary Plot")

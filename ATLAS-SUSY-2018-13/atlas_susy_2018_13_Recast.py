@@ -8,6 +8,8 @@ import glob
 import pyslha
 import time
 import progressbar as P
+import sys
+sys.path.append('../')
 from helper import LLP
 from ATLAS_data.effFunctions import eventEff,vertexEff
 
@@ -24,7 +26,7 @@ ROOT.gInterpreter.Declare('#include "classes/SortableObject.h"')
 ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
-def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=1e-2):
+def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=5e-2):
 
     llps = []
     for ip in range(llpList.GetEntries()):
