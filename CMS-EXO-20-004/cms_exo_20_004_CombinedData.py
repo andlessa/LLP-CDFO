@@ -20,7 +20,7 @@ def combineRecastData(files,outputFile):
 
         
     allColumns = allData.columns.tolist()
-    orderColumns = ['$m_{\tilde b}$','$m_{\tilde \chi_1^0}$','Data-takingperiod']
+    orderColumns = ['mLLP','mLSP','Data-takingperiod']
     allCols = orderColumns[:] + [c for c in allColumns if not c in orderColumns]
     allData = allData[allCols]
     allData.sort_values(orderColumns,inplace=True,

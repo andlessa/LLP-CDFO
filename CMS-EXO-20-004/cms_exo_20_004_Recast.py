@@ -95,9 +95,16 @@ def getModelDict(inputFiles):
     mMed = pars.blocks['MASS'][1000005]
     print('\nModel parameters:')
     print('Msbottom = %1.2f GeV, mDM = %1.2f \n'  %(mMed,mDM))
-    modelDict['$m_{\tilde b}$'] = mMed
-    modelDict['$m_{\tilde \chi_1^0}$'] = mDM
+    modelDict['mLLP'] = mMed
+    modelDict['mLSP'] = mDM
     modelDict['Coupling'] = 'sbottom'
+    modelDict['width'] = pars.decays[1000005].totalwidth
+    if modelDict['width']:
+        modelDict['tau_ns'] = (6.582e-25/modelDict['width'])*1e9
+    else:
+        modelDict['tau_ns'] = np.inf    
+
+
 
     return modelDict
 

@@ -51,7 +51,7 @@ def computeULs(inputFile,outputFile,deltas=0.0):
     # ### Get all model points
     models = []
 
-    mCols = ['$m_{\tilde b}$','$m_{\tilde \chi_1^0}$']
+    mCols = ['mLLP','mLSP']
     
     for row in recastData[mCols].values:
         m = dict(zip(mCols,row.tolist()))
@@ -96,8 +96,8 @@ def computeULs(inputFile,outputFile,deltas=0.0):
             print('Error computing ulExp for model:\n',m,'\n')
             ulExp = None
         
-        recastData.loc[dfModel.index,'$\mu^{UL}_{obs}$'] = ul
-        recastData.loc[dfModel.index,'$\mu^{UL}_{exp}$'] = ulExp
+        recastData.loc[dfModel.index,'robs'] = 1./ul
+        recastData.loc[dfModel.index,'rexp'] = 1./ulExp
 
     progressbar.finish()
     recastData.to_pickle(outputFile)
