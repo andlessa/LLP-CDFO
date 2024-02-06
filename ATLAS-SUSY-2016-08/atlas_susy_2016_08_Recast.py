@@ -26,7 +26,7 @@ ROOT.gInterpreter.Declare('#include "classes/SortableObject.h"')
 ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
-def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=5e-2):
+def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=5e-2,trackEff=1.0):
 
     llps = []
     for ip in range(llpList.GetEntries()):
@@ -43,7 +43,7 @@ def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=5e-2):
                 llp_fdaughters.append(d)
         
         # Get final daughters
-        llps.append(LLP(p,llp_ddaughters,llp_fdaughters,maxMomViolation))
+        llps.append(LLP(p,llp_ddaughters,llp_fdaughters,maxMomViolation,trackEff))
         
     return llps
 

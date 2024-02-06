@@ -13,14 +13,18 @@ for (Rmin,Rmax),f in files.items():
     pts = np.genfromtxt(fname,names=True,
                         comments='#',delimiter=',',skip_header=10)
     eff_F = interp1d(pts['Truth_MET_GeV'],pts['Event_selection_efficiency'],
+                     fill_value=(0.0,0.0),
+                     bounds_error=False,
+                      kind='linear')
+    eff_F_ext = interp1d(pts['Truth_MET_GeV'],pts['Event_selection_efficiency'],
                      fill_value=(0.0,pts['Event_selection_efficiency'][-1]),
                      bounds_error=False,
                       kind='linear')
-                    #  kind='nearest')
-    functions_event_eff[(Rmin,Rmax)] = eff_F
+    
+    functions_event_eff[(Rmin,Rmax)] = {'bounds' : eff_F, 'extrapolate' : eff_F_ext}
 
 
-def eventEff(met,llps):
+def eventEff(met,llps,extrapolate=True):
 
     r_max = max([np.sqrt(llp.Xd**2 + llp.Yd**2) 
                  for llp in llps])
@@ -30,9 +34,12 @@ def eventEff(met,llps):
              if Rint[0] < r_max <= Rint[1]]
     if not eff_F:
         return 0.0
+    elif not extrapolate:
+        eff_F = eff_F[0]['bounds']
     else:
-        eff_F = eff_F[0]
-        return eff_F(met)
+        eff_F = eff_F[0]['extrapolate']
+    
+    return eff_F(met)
 
 functions_vertex_eff = {}
 files = {(4.,22.) : "Table25.csv", 
@@ -54,11 +61,11 @@ for (Rmin,Rmax),f in files.items():
                         comments='#',delimiter=',',skip_header=10)
 
     eff_F = LinearNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'],fill_value=0.0)
-    # eff_F = NearestNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'])
-    functions_vertex_eff[(Rmin,Rmax)] = eff_F
+    eff_F_ext = NearestNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'])
+    functions_vertex_eff[(Rmin,Rmax)] =  {'bounds' : eff_F, 'extrapolate' : eff_F_ext}
 
 
-def vertexEff(llp):
+def vertexEff(llp,extrapolate=False):
     
     r = np.sqrt(llp.Xd**2 + llp.Yd**2)
     mDV = llp.mDV
@@ -70,4 +77,7 @@ def vertexEff(llp):
         return 0.0
     else:
         eff_F = eff_F[0]
-        return eff_F(mDV,n)
+        eff = eff_F['bounds'](mDV,n)
+        if (not eff) and extrapolate:
+            eff = eff_F['extrapolate'](mDV,n)
+        return eff
