@@ -76,35 +76,17 @@ def eventAcc(jets,met,metCut=200.0,
     if lumCut > 0.75:
         return 1.0
     
-    passAcc = 0.0
     # Apply jet cuts
     good_jets = []
     jets_sorted = sorted(jets, key = lambda j: j.PT, reverse=True)
-    try:
-        for jet in jets_sorted:
-            pTCharged = 0.0
-            for ip in range(jet.Constituents.GetEntries()):
-                particle = jet.Constituents.At(ip)
-                if particle.Charge == 0:
-                    continue
-                r_prod = np.sqrt(particle.X**2 + particle.Y**2)
-                if r_prod  > minPVdistance:
-                    continue
-                pTCharged += particle.PT
-            if pTCharged > maxJetChargedPT:
-                continue
-            good_jets.append(jet)
-    except:
-        # print('------ Could not read the Jet constituents, make sure the stable particles were added to Delphes output ------')
-        # print('------ Skipping the charged pT jet cut --------')
-        good_jets = jets[:]
+    good_jets = [j for j in jets_sorted if j.ChargedPTPV < maxJetChargedPT]
     
     if len(good_jets) > 0 and good_jets[0].PT > minJetPt1:
-        passAcc = 1.0
+        return 1.0
     elif len(good_jets) > 1 and  good_jets[1].PT > minJetPt2:
-        passAcc = 1.0
-    
-    return passAcc
+        return 1.0
+    else:
+        return 0.0
 
 def vertexAcc(llp,Rmax=np.inf,zmax=np.inf,Rmin=0.0,d0min=0.0,nmin=0,mDVmin=0):
     

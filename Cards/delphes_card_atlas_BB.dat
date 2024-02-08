@@ -665,7 +665,7 @@ module PdgCodeFilter JetFilter {
   # Exclude muons
   add PdgCode {13}
   add PdgCode {-13}
-  # Exclude neutralinos
+  # Exclude neutralinos and sbottoms
   add PdgCode {1000022}
   add PdgCode {1000005}
 
@@ -706,6 +706,8 @@ module FastJetFinder GenJetFinder {
   set ParameterR 0.4
 
   set JetPTMin 20.0
+  # Maximum transverse distance of jet constituent to be counted in the ChargedPTPV variable
+  set MaxPVDist 4.0
 }
 
 
@@ -830,7 +832,7 @@ module TreeWriter TreeWriter {
 # add Branch InputArray BranchName BranchClass
 #  add Branch Delphes/allParticles Particle GenParticle
 #  add Branch Delphes/partons Parton GenParticle  
-  add Branch Delphes/stableParticles StableParticle GenParticle
+#  add Branch Delphes/stableParticles StableParticle GenParticle
   add Branch BSMFilter/finalDaughters bsmFinalDaughters GenParticle
   add Branch BSMFilter/directDaughters bsmDirectDaughters GenParticle
   add Branch BSMFilter/bsmParticles bsm GenParticle
@@ -847,12 +849,12 @@ module TreeWriter TreeWriter {
   add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET
 
-  add Branch UniqueObjectFinder/jets Jet Jet
-  add Branch UniqueObjectFinder/electrons Electron Electron
-  add Branch UniqueObjectFinder/photons Photon Photon
-  add Branch UniqueObjectFinder/muons Muon Muon
+#  add Branch UniqueObjectFinder/jets Jet Jet
+#  add Branch UniqueObjectFinder/electrons Electron Electron
+#  add Branch UniqueObjectFinder/photons Photon Photon
+#  add Branch UniqueObjectFinder/muons Muon Muon
 #  add Branch MissingET/momentum MissingET MissingET
 #  add Branch MissingETCalo/momentum MissingETCalo MissingET
-  add Branch ScalarHT/energy ScalarHT ScalarHT
+#  add Branch ScalarHT/energy ScalarHT ScalarHT
 }
 
