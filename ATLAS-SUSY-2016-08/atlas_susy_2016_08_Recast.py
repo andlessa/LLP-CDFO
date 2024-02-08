@@ -63,34 +63,6 @@ def getJets(jets,pTmin=50.0,etaMax=5.0):
     
     return jetsSel
 
-def getDisplacedJets(jets,llps,skipPIDs=[1000022]):
-    """
-    Select from the list of all jets, the displaced jets associated
-    with a LLP decay.
-    """
-
-    displacedJets = []
-    for jet in jets:
-        deltaRmin = 0.3
-        llpMatch = None
-        for llp in llps: 
-            for daughter in llp.directDaughters:
-                if abs(daughter.PID) in skipPIDs:
-                    continue
-                deltaR = np.sqrt((jet.Eta-daughter.Eta)**2 + (jet.Phi-daughter.Phi)**2)
-                if deltaR < deltaRmin:
-                    deltaRmin = deltaR
-                    llpMatch = llp # Store LLP parent
-        
-        jet.llp = llpMatch
-        if llpMatch is not None:
-            R = np.sqrt(llpMatch.Xd**2 + llpMatch.Yd**2 + llpMatch.Zd**2)
-            if R > 3870:
-                continue
-            displacedJets.append(jet)
-    
-    return displacedJets
-
 def eventAcc(jets,met,metCut=200.0,
              maxJetChargedPT=np.inf,
              minJetPt1=0.,minJetPt2=0.,
@@ -107,23 +79,26 @@ def eventAcc(jets,met,metCut=200.0,
     passAcc = 0.0
     # Apply jet cuts
     good_jets = []
-    for jet in jets:
-        pTCharged = 0.0
-        for ip in range(jet.Constituents.GetEntries()):
-            particle = jet.Constituents.At(ip)
-            if particle.Charge == 0:
+    jets_sorted = sorted(jets, key = lambda j: j.PT, reverse=True)
+    try:
+        for jet in jets_sorted:
+            pTCharged = 0.0
+            for ip in range(jet.Constituents.GetEntries()):
+                particle = jet.Constituents.At(ip)
+                if particle.Charge == 0:
+                    continue
+                r_prod = np.sqrt(particle.X**2 + particle.Y**2)
+                if r_prod  > minPVdistance:
+                    continue
+                pTCharged += particle.PT
+            if pTCharged > maxJetChargedPT:
                 continue
-            r_prod = np.sqrt(particle.X**2 + particle.Y**2)
-            if r_prod  > minPVdistance:
-                continue
-            pTCharged += particle.PT
-        if pTCharged > maxJetChargedPT:
-            continue
-        good_jets.append(jet)
-
+            good_jets.append(jet)
+    except:
+        # print('------ Could not read the Jet constituents, make sure the stable particles were added to Delphes output ------')
+        # print('------ Skipping the charged pT jet cut --------')
+        good_jets = jets[:]
     
-    good_jets = sorted(good_jets[:], key = lambda j: j.PT, reverse=True)
-
     if len(good_jets) > 0 and good_jets[0].PT > minJetPt1:
         passAcc = 1.0
     elif len(good_jets) > 1 and  good_jets[1].PT > minJetPt2:
@@ -202,7 +177,7 @@ def getModelDict(inputFiles,model):
     return modelInfoDict
 
 # ### Define dictionary to store data
-def getRecastData(inputFiles,normalize=False,model='strong'):
+def getRecastData(inputFiles,model='strong'):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -250,11 +225,7 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        # if normalize:
-        #     norm =nevtsDict[inputFile]/modelDict['Total MC Events']
-        # else:
-        #     norm = 1.0/modelDict['Total MC Events']
-        norm = 1.0
+        norm =nevtsDict[inputFile]/modelDict['Total MC Events']
 
         for ievt in range(nevts):    
             
@@ -342,8 +313,6 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data. '
                  + 'If not defined, will use the name of the first input file', 
             default = None)
-    ap.add_argument('-n', '--normalize', required=False,action='store_true',
-            help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
 
@@ -375,7 +344,7 @@ if __name__ == "__main__":
     if os.path.splitext(outputFile)[1] != '.pcl':
         outputFile = os.path.splitext(outputFile)[0] + '.pcl'
 
-    dataDict = getRecastData(inputFiles,args.normalize,args.model)
+    dataDict = getRecastData(inputFiles,args.model)
     if args.verbose == 'debug':
         for k,v in dataDict.items():
             print(k,v)

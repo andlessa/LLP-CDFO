@@ -4,7 +4,7 @@ import pandas as pd
 import time,os,sys
 import pandas as pd
 
-def computeULs(inputFile,outputFile,kfactor=1.0,deltas=0.25):
+def computeULs(inputFile,outputFile,kfactor=1.0):
 
     # ### Load Recast Data
     recastData = pd.read_pickle(inputFile)
