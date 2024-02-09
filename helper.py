@@ -38,7 +38,8 @@ class LLP(object):
             pTratio = abs(d.PT/d.Charge)
             if pTratio < 1.0:
                 continue
-            if np.random.random() > trackEff: # Apply random efficiency for track reco?
+            
+            if trackEff < 1.0 and np.random.random() > trackEff: # Apply random efficiency for track reco?
                 continue
             self._selectedDecays.append(d)
             
@@ -60,14 +61,14 @@ class LLP(object):
         for d in self.directDaughters:                
             pTot -= np.array([d.E,d.Px,d.Py,d.Pz])
         if np.linalg.norm(pTot)/pNorm > maxMomViolation/1e3: # Be more strict about direct daughters
-            raise ValueError("Error getting direct daughters, momentum conservation violated!")
+            raise ValueError("Error getting direct daughters, momentum conservation violated by %1.1e!" %(np.linalg.norm(pTot)/pNorm))
       
         pTot = np.array([self.E,self.Px,self.Py,self.Pz])
         pNorm = np.linalg.norm(pTot)
         for d in self.finalDaughters:                
             pTot -= np.array([d.E,d.Px,d.Py,d.Pz])
         if np.linalg.norm(pTot)/pNorm > maxMomViolation:
-            raise ValueError("Error getting final daughters, momentum conservation violated! (%s)" %(str(pTot)))        
+            raise ValueError("Error getting final daughters, momentum conservation violated by %1.1e! (%s)" %(np.linalg.norm(pTot)/pNorm,str(pTot)))
         
         rList = [np.sqrt(d.X**2 + d.Y**2 + d.Z**2) for d in self.directDaughters]
 

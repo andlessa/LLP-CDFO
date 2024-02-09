@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os,glob
-from typing import Any
 import numpy as np
 import pandas as pd
 import glob
@@ -65,8 +64,7 @@ def getJets(jets,pTmin=50.0,etaMax=5.0):
 
 def eventAcc(jets,met,metCut=200.0,
              maxJetChargedPT=np.inf,
-             minJetPt1=0.,minJetPt2=0.,
-             minPVdistance=0.0):
+             minJetPt1=0.,minJetPt2=0):
     
     if met < metCut:
         return 0.0
@@ -188,12 +186,9 @@ def getRecastData(inputFiles,model='strong'):
     # Keep track of yields for each dataset
     cutFlow = { "Total" : 0.0,
                 "Jet+MET selection" : 0.0,
-                # "$R_{xy},z <$ 300 mm" : 0.0,
-                # "$R_{DV} > 4$ mm" : 0.0,
-                # "$nTracks >= 5$" : 0.0,
-                # "mDV > 10 GeV" : 0.0
                 "DV selection" : 0.0
                 }
+    cutFlowErrSq = dict(cutFlow.items())
     
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
@@ -225,13 +220,16 @@ def getRecastData(inputFiles,model='strong'):
             # Event acceptance
             evt_acc = eventAcc(jets,met,metCut=200.0,
                                maxJetChargedPT=5.0,minJetPt1=70.,
-                               minJetPt2=25.,minPVdistance=4.0)
+                               minJetPt2=25.)
 
             cutFlow["Total"] += ns
+            cutFlowErrSq["Total"] += ns**2
             if (not evt_acc):
                 continue
 
-            cutFlow["Jet+MET selection"] += ns*evt_acc
+            ns = ns*evt_acc
+            cutFlow["Jet+MET selection"] += ns
+            cutFlowErrSq["Jet+MET selection"] += ns**2
 
             llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
             # Vertex acceptances:
@@ -242,20 +240,27 @@ def getRecastData(inputFiles,model='strong'):
                 continue
             # Event efficiency
             evt_eff = eventEff(met,good_llps)
+
+            ns = ns*evt_eff
             
             # Vertex efficiencies:
             v_eff = np.array([vertexEff(llp) for llp in llps])
             
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
+
+            ns = ns*wvertex
             
             # Add to the total weight in each SR:
-            cutFlow["DV selection"] += ns*evt_acc*evt_eff*wvertex
+            cutFlow["DV selection"] += ns
+            cutFlowErrSq["DV selection"] += ns**2
 
         f.Close()
     progressbar.finish()
 
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
+
+    cutFlowErr = {k : np.sqrt(v) for k,v in cutFlowErrSq.items()}
 
     # Compute normalized cutflow
     for key,val in cutFlow.items():
@@ -264,7 +269,11 @@ def getRecastData(inputFiles,model='strong'):
         valRound = float('%1.3e' %val)
         valNorm = float('%1.3e' %(val/cutFlow['Total']))
         cutFlow[key] = (valRound,valNorm)
+        errRound = float('%1.3e' %cutFlowErr[key])
+        errNorm = float('%1.3e' %(cutFlowErr[key]/cutFlow['Total']))
+        cutFlowErr[key] = (errRound,errNorm)
     cutFlow['Total'] = (float('%1.3e' %cutFlow['Total']),1.0)
+    cutFlowErr['Total'] = (float('%1.3e' %cutFlowErr['Total']),0.0)
 
     
     # Create a dictionary for storing data
@@ -272,8 +281,10 @@ def getRecastData(inputFiles,model='strong'):
     dataDict['Luminosity (1/fb)'] = [lumi]
     dataDict['$N_s$'] = [cutFlow["DV selection"][0]]
     dataDict['AccEff'] = [cutFlow["DV selection"][1]]
+    dataDict['AccEffErr'] = [cutFlowErr["DV selection"][1]]
     for cut,val in cutFlow.items():
         dataDict.setdefault(cut,[val])
+        dataDict.setdefault(cut+' Error',[cutFlowErr[cut]])
 
     # Create a dictionary for storing data
     dataDict.update(modelDict)
@@ -313,6 +324,9 @@ if __name__ == "__main__":
         print('Enviroment variables not properly set. Run source setenv.sh first.')
         sys.exit()
 
+    # Set random seed
+    # np.random.seed(22)
+    np.random.seed(15)
 
     t0 = time.time()
 

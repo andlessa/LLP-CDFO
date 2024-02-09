@@ -66,6 +66,8 @@ def getCutFlow(inputFiles,model='bb'):
                 "+Evt Eff" : 0.0,
                 "+DV Eff" : 0.0
                 }
+    cutFlowErrSq = dict(cutFlow.items())
+    
     
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
@@ -95,22 +97,25 @@ def getCutFlow(inputFiles,model='bb'):
             met = tree.GenMissingET.At(0).MET
 
             cutFlow["Total"] += ns
+            cutFlowErrSq["Total"] += ns**2
 
             # Event acceptance
             evt_acc = eventAcc(jets,met,metCut=0.0,
                                maxJetChargedPT=5.0,minJetPt1=70.,
-                               minJetPt2=25.,minPVdistance=4.0)
+                               minJetPt2=25.)
             
             if (not evt_acc):
                 continue
 
             ns = ns*evt_acc
             cutFlow["Jet Selection"] += ns
+            cutFlowErrSq["Jet Selection"] += ns**2
 
             if met < 200.0:
                 continue
             
             cutFlow["MET > 200"] += ns
+            cutFlowErrSq["MET > 200"] += ns**2
 
             llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
 
@@ -118,22 +123,27 @@ def getCutFlow(inputFiles,model='bb'):
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0)]
             if not llpsSel: continue
             cutFlow["$R_{xy},z <$ 300 mm"] += ns
+            cutFlowErrSq["$R_{xy},z <$ 300 mm"] += ns**2
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0)]
             if not llpsSel: continue
             cutFlow["$R_{DV} > 4$ mm"] += ns
+            cutFlowErrSq["$R_{DV} > 4$ mm"] += ns**2
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0)]
             if not llpsSel: continue
             cutFlow["$d_0 > 2$ mm"] += ns
+            cutFlowErrSq["$d_0 > 2$ mm"] += ns**2
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5)]
             if not llpsSel: continue
             cutFlow["$nTracks >= 5$"] += ns
+            cutFlowErrSq["$nTracks >= 5$"] += ns**2
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0)]
             if not llpsSel: continue
             cutFlow["mDV > 10 GeV"] += ns
+            cutFlowErrSq["mDV > 10 GeV"] += ns**2
            
             # Event efficiency
             evt_eff = eventEff(met,llpsSel)
@@ -145,12 +155,15 @@ def getCutFlow(inputFiles,model='bb'):
             ns = ns*evt_eff
 
             cutFlow["+Evt Eff"] += ns
-            
+            cutFlowErrSq["+Evt Eff"] += ns**2
             
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
+
+            ns = ns*wvertex
             
             # Add to the total weight in each SR:
-            cutFlow["+DV Eff"] += ns*wvertex
+            cutFlow["+DV Eff"] += ns
+            cutFlowErrSq["+DV Eff"] += ns**2
 
         f.Close()
     progressbar.finish()
@@ -158,17 +171,22 @@ def getCutFlow(inputFiles,model='bb'):
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
+    cutFlowErr = {k : np.sqrt(v) for k,v in cutFlowErrSq.items()}
+
     # Compute normalized cutflow
     print('Cutflow:')
     for key,val in cutFlow.items():
         if key == 'Total':
             continue
         valNorm = float('%1.3e' %(val/cutFlow['Total']))
+        errNorm = float('%1.3e' %(cutFlowErr[key]/cutFlow['Total']))
         cutFlow[key] = valNorm
+        cutFlowErr[key] = errNorm
     cutFlow['Total'] = 1.0
+    cutFlowErr['Total'] = 0.0
 
     for k,v in cutFlow.items():
-        print('%s : %1.3e' %(k,v))
+        print('%s : %1.3e +- %1.1f%%' %(k,v,1e2*cutFlowErr[k]/v))
 
 
     return cutFlow
@@ -202,6 +220,10 @@ if __name__ == "__main__":
         print('Enviroment variables not properly set. Run source setenv.sh first.')
         sys.exit()
 
+
+    # Set random seed
+    # np.random.seed(22)
+    np.random.seed(15)
 
     t0 = time.time()
 
