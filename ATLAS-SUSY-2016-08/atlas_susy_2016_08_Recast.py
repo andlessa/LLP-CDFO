@@ -280,6 +280,7 @@ def getRecastData(inputFiles,model='strong'):
     dataDict = {}
     dataDict['Luminosity (1/fb)'] = [lumi]
     dataDict['$N_s$'] = [cutFlow["DV selection"][0]]
+    dataDict['$N_s$ Err'] = [cutFlowErr["DV selection"][0]]
     dataDict['AccEff'] = [cutFlow["DV selection"][1]]
     dataDict['AccEffErr'] = [cutFlowErr["DV selection"][1]]
     for cut,val in cutFlow.items():
