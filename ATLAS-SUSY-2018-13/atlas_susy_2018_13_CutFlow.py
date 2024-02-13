@@ -22,7 +22,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
+def getcutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -51,27 +51,23 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
     lumi = 139.0
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    cutFlowAcceptance = {}
+    cutFlow = {}
     if model == 'strong':
-        cutFlowAcceptance['$m_{\\tilde g} (GeV)$'] = modelDict['mLSP']
-        cutFlowAcceptance['$m_{\\tilde \chi_1^0} (GeV)$'] = modelDict['mLLP']
-        cutFlowAcceptance['$\\tau(\\tilde \chi_1^0) (ns)$'] = modelDict['tau_ns']
+        cutFlow['$m_{\\tilde g} (GeV)$'] = modelDict['mLSP']
+        cutFlow['$m_{\\tilde \chi_1^0} (GeV)$'] = modelDict['mLLP']
+        cutFlow['$\\tau(\\tilde \chi_1^0) (ns)$'] = modelDict['tau_ns']
     elif model == 'ewk':
-        cutFlowAcceptance['$m_{\\tilde \chi_1^0} (GeV)$'] = modelDict['mLLP']
-        cutFlowAcceptance['$\\tau(\\tilde \chi_1^0) (ns)$'] = modelDict['tau_ns']
+        cutFlow['$m_{\\tilde \chi_1^0} (GeV)$'] = modelDict['mLLP']
+        cutFlow['$\\tau(\\tilde \chi_1^0) (ns)$'] = modelDict['tau_ns']
     elif model == 'bb':
-        cutFlowAcceptance['$m_{\\tilde b_1} (GeV)$'] = modelDict['mLLP']
-        cutFlowAcceptance['$\\tau(\\tilde b_1) (ns)$'] = modelDict['tau_ns']
+        cutFlow['$m_{\\tilde b_1} (GeV)$'] = modelDict['mLLP']
+        cutFlow['$\\tau(\\tilde b_1) (ns)$'] = modelDict['tau_ns']
 
-    cutFlowAcceptance.update({"Total" : 0.0,
-                "Jet selection" : 0.0,
-                "$R_{xy},z <$ 300 mm" : 0.0,
-                "$R_{DV} > 4$ mm" : 0.0,
-                "$d_0 > 2$ mm" : 0.0,
-                "$nTracks >= 5$" : 0.0,
-                "mDV > 10 GeV" : 0.0,
-                "final Acc*Eff" : 0.0
-                })
+    keys = ["Total", "Jet selection", "$R_{xy},z <$ 300 mm", 
+            "$R_{DV} > 4$ mm", "$d_0 > 2$ mm", 
+            "$nTracks >= 5$", "mDV > 10 GeV", "final Acc*Eff"]
+    for k in keys:
+        cutFlow[k] = np.zeros(2)
     
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
@@ -84,11 +80,9 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = nevtsDict[inputFile]
-        # if normalize:
-        #     norm =nevtsDict[inputFile]/modelDict['Total MC Events']
-        # else:
-        #     norm = 1.0/modelDict['Total MC Events']
-        norm = 1.0
+        # Assume multiple files correspond to equivalent samplings
+        # of the same distributions
+        norm =nevtsDict[inputFile]/modelDict['Total MC Events']
 
         for ievt in range(nevts):    
             
@@ -107,31 +101,31 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
             # Event acceptance:
             jet_acc = eventAcc(jets,jetsDisp,sr=sr)
 
-            cutFlowAcceptance["Total"] += ns
+            cutFlow["Total"] += (ns,ns**2)
             if (not jet_acc): continue
             ns = ns*jet_acc
 
-            cutFlowAcceptance["Jet selection"] += ns
+            cutFlow["Jet selection"] += (ns,ns**2)
             
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0)]
             if not llpsSel: continue
-            cutFlowAcceptance["$R_{xy},z <$ 300 mm"] += ns
+            cutFlow["$R_{xy},z <$ 300 mm"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0)]
             if not llpsSel: continue
-            cutFlowAcceptance["$R_{DV} > 4$ mm"] += ns
+            cutFlow["$R_{DV} > 4$ mm"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0)]
             if not llpsSel: continue
-            cutFlowAcceptance["$d_0 > 2$ mm"] += ns
+            cutFlow["$d_0 > 2$ mm"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5)]
             if not llpsSel: continue
-            cutFlowAcceptance["$nTracks >= 5$"] += ns
+            cutFlow["$nTracks >= 5$"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0)]
             if not llpsSel: continue
-            cutFlowAcceptance["mDV > 10 GeV"] += ns
+            cutFlow["mDV > 10 GeV"] += (ns,ns**2)
 
             # Event efficiency
             ev_eff = eventEff(jets,llps,sr=sr)
@@ -142,7 +136,8 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
 
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
 
-            cutFlowAcceptance['final Acc*Eff'] += ns*ev_eff*wvertex
+            ns = ns*ev_eff*wvertex
+            cutFlow['final Acc*Eff'] += (ns, ns**2)
 
         f.Close()
     progressbar.finish()
@@ -150,19 +145,29 @@ def getCutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
+    cutFlowErr = {k : np.sqrt(v[1]) for k,v in cutFlow.items()}
+    cutFlow = {k : v[0]  for k,v in cutFlow.items()}
+
+
     # Compute normalized cutflow
-    for key,val in cutFlowAcceptance.items():
+    for key,val in cutFlow.items():
         if key == 'Total' or '(GeV)' in key or '(ns)' in key:
             continue
-        valNorm = float('%1.3e' %(val/cutFlowAcceptance['Total']))
-        cutFlowAcceptance[key] = valNorm
-    cutFlowAcceptance['Total'] = 1.0
+        valNorm = float('%1.3e' %(val/cutFlow['Total']))
+        errNorm = float('%1.3e' %(cutFlowErr[key]/cutFlow['Total']))
+        cutFlow[key] = valNorm
+        cutFlowErr[key] = errNorm
+    cutFlow['Total'] = 1.0
+    cutFlowErr['Total'] = 0.0
 
     print('Acceptance for %s:' %sr)
-    for k,v in cutFlowAcceptance.items():
-        print('%s : %1.3f%%' %(k,v*1e2))
-    
-    return cutFlowAcceptance
+    for k,v in cutFlow.items():
+        if v != 0.0:
+            print('%s : %1.3e +- %1.1f%%' %(k,v,1e2*cutFlowErr[k]/v))
+        else:
+            print('%s : %1.3e +- ??' %(k,v))
+
+    return cutFlow
 
 
 if __name__ == "__main__":
@@ -216,11 +221,11 @@ if __name__ == "__main__":
     if os.path.splitext(outputFile)[1] != '.pcl':
         outputFile = os.path.splitext(outputFile)[0] + '.pcl'
 
-    cutFlowAcceptance = getCutFlow(inputFiles,args.normalize,args.model,args.SR,args.nevts)
+    cutFlow = getcutFlow(inputFiles,args.normalize,args.model,args.SR,args.nevts)
 
     # ### Save DataFrame to pickle file
     # #### Create pandas DataFrame
-    df = pd.DataFrame.from_dict(cutFlowAcceptance, orient='index')
+    df = pd.DataFrame.from_dict(cutFlow, orient='index')
     print('Saving to',outputFile)
     df.to_pickle(outputFile)
 

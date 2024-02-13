@@ -55,18 +55,11 @@ def getCutFlow(inputFiles,model='bb'):
     lumi = 32.8
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    cutFlow = { "Total" : 0.0,
-                "Jet Selection" : 0.0,
-                "MET > 200" : 0.0,
-                "$R_{xy},z <$ 300 mm" : 0.0,
-                "$R_{DV} > 4$ mm" : 0.0,
-                "$d_0 > 2$ mm" : 0.0,
-                "$nTracks >= 5$" : 0.0,
-                "mDV > 10 GeV" : 0.0,
-                "+Evt Eff" : 0.0,
-                "+DV Eff" : 0.0
-                }
-    cutFlowErrSq = dict(cutFlow.items())
+    keys = ["Total", "MET > 200", "Jet Selection", 
+            "$R_{xy},z <$ 300 mm", "$R_{DV} > 4$ mm",
+            "$d_0 > 2$ mm", "$nTracks >= 5$",
+            "mDV > 10 GeV",  "+Evt Eff", "+DV Eff"]
+    cutFlow = { k : np.zeros(2) for k in keys}
     
     
 
@@ -96,11 +89,16 @@ def getCutFlow(inputFiles,model='bb'):
             jets = getJets(tree.GenJet,pTmin=25.,etaMax=5.0)
             met = tree.GenMissingET.At(0).MET
 
-            cutFlow["Total"] += ns
-            cutFlowErrSq["Total"] += ns**2
+            cutFlow["Total"] += (ns,ns**2)
+
+            if met < 200.0:
+                continue
+
+            cutFlow["MET > 200"] += (ns,ns**2)
+
 
             # Event acceptance
-            evt_acc = eventAcc(jets,met,metCut=0.0,
+            evt_acc = eventAcc(jets,met,metCut=200.0,
                                maxJetChargedPT=5.0,minJetPt1=70.,
                                minJetPt2=25.)
             
@@ -108,42 +106,30 @@ def getCutFlow(inputFiles,model='bb'):
                 continue
 
             ns = ns*evt_acc
-            cutFlow["Jet Selection"] += ns
-            cutFlowErrSq["Jet Selection"] += ns**2
-
-            if met < 200.0:
-                continue
-            
-            cutFlow["MET > 200"] += ns
-            cutFlowErrSq["MET > 200"] += ns**2
+            cutFlow["Jet Selection"] += (ns,ns**2)            
 
             llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
 
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0)]
             if not llpsSel: continue
-            cutFlow["$R_{xy},z <$ 300 mm"] += ns
-            cutFlowErrSq["$R_{xy},z <$ 300 mm"] += ns**2
+            cutFlow["$R_{xy},z <$ 300 mm"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0)]
             if not llpsSel: continue
-            cutFlow["$R_{DV} > 4$ mm"] += ns
-            cutFlowErrSq["$R_{DV} > 4$ mm"] += ns**2
+            cutFlow["$R_{DV} > 4$ mm"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0)]
             if not llpsSel: continue
-            cutFlow["$d_0 > 2$ mm"] += ns
-            cutFlowErrSq["$d_0 > 2$ mm"] += ns**2
+            cutFlow["$d_0 > 2$ mm"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5)]
             if not llpsSel: continue
-            cutFlow["$nTracks >= 5$"] += ns
-            cutFlowErrSq["$nTracks >= 5$"] += ns**2
+            cutFlow["$nTracks >= 5$"] += (ns,ns**2)
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0)]
             if not llpsSel: continue
-            cutFlow["mDV > 10 GeV"] += ns
-            cutFlowErrSq["mDV > 10 GeV"] += ns**2
+            cutFlow["mDV > 10 GeV"] += (ns,ns**2)
            
             # Event efficiency
             evt_eff = eventEff(met,llpsSel)
@@ -154,16 +140,14 @@ def getCutFlow(inputFiles,model='bb'):
 
             ns = ns*evt_eff
 
-            cutFlow["+Evt Eff"] += ns
-            cutFlowErrSq["+Evt Eff"] += ns**2
+            cutFlow["+Evt Eff"] += (ns,ns**2)
             
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
 
             ns = ns*wvertex
             
             # Add to the total weight in each SR:
-            cutFlow["+DV Eff"] += ns
-            cutFlowErrSq["+DV Eff"] += ns**2
+            cutFlow["+DV Eff"] += (ns,ns**2)
 
         f.Close()
     progressbar.finish()
@@ -171,7 +155,8 @@ def getCutFlow(inputFiles,model='bb'):
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
-    cutFlowErr = {k : np.sqrt(v) for k,v in cutFlowErrSq.items()}
+    cutFlowErr = {k : np.sqrt(v[1]) for k,v in cutFlow.items()}
+    cutFlow = {k : v[0]  for k,v in cutFlow.items()}
 
     # Compute normalized cutflow
     print('Cutflow:')

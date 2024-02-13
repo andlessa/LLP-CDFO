@@ -184,12 +184,8 @@ def getRecastData(inputFiles,model='strong'):
     lumi = 32.8
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    cutFlow = { "Total" : 0.0,
-                "Jet+MET selection" : 0.0,
-                "DV selection" : 0.0
-                }
-    cutFlowErrSq = dict(cutFlow.items())
-    
+    keys = ["Total","Jet+MET selection","DV selection"]
+    cutFlow = {k  : np.zeros(2) for k in keys}    
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
@@ -202,6 +198,8 @@ def getRecastData(inputFiles,model='strong'):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        # Assume multiple files correspond to equivalent samplings
+        # of the same distributions
         norm =nevtsDict[inputFile]/modelDict['Total MC Events']
 
         for ievt in range(nevts):    
@@ -222,14 +220,12 @@ def getRecastData(inputFiles,model='strong'):
                                maxJetChargedPT=5.0,minJetPt1=70.,
                                minJetPt2=25.)
 
-            cutFlow["Total"] += ns
-            cutFlowErrSq["Total"] += ns**2
+            cutFlow["Total"] += (ns,ns**2)
             if (not evt_acc):
                 continue
 
             ns = ns*evt_acc
-            cutFlow["Jet+MET selection"] += ns
-            cutFlowErrSq["Jet+MET selection"] += ns**2
+            cutFlow["Jet+MET selection"] += (ns,ns**2)
 
             llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
             # Vertex acceptances:
@@ -251,8 +247,7 @@ def getRecastData(inputFiles,model='strong'):
             ns = ns*wvertex
             
             # Add to the total weight in each SR:
-            cutFlow["DV selection"] += ns
-            cutFlowErrSq["DV selection"] += ns**2
+            cutFlow["DV selection"] += (ns,ns**2)
 
         f.Close()
     progressbar.finish()
@@ -260,8 +255,9 @@ def getRecastData(inputFiles,model='strong'):
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
-    cutFlowErr = {k : np.sqrt(v) for k,v in cutFlowErrSq.items()}
-
+    cutFlowErr = {k : np.sqrt(v[1]) for k,v in cutFlow.items()}
+    cutFlow = {k : v[0]  for k,v in cutFlow.items()}
+    
     # Compute normalized cutflow
     for key,val in cutFlow.items():
         if key == 'Total':

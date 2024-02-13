@@ -214,17 +214,9 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
     lumi = 139.0
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    cutFlowHighPT = { "Total" : 0.0,
-                "Jet selection" : 0.0,
-                # "$R_{xy},z <$ 300 mm" : 0.0,
-                # "$R_{DV} > 4$ mm" : 0.0,
-                # "$nTracks >= 5$" : 0.0,
-                # "mDV > 10 GeV" : 0.0
-                "DV selection" : 0.0
-                }
-    
-    cutFlowTrackless = {k : v for k,v in cutFlowHighPT.items()}
-
+    keys = ["Total", "Jet selection", "DV selection"]
+    cutFlowHighPT = { k : np.zeros(2) for k in keys}    
+    cutFlowTrackless = {k : np.zeros(2) for k in keys}
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
@@ -237,11 +229,9 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        # if normalize:
-        #     norm =nevtsDict[inputFile]/modelDict['Total MC Events']
-        # else:
-        #     norm = 1.0/modelDict['Total MC Events']
-        norm = 1.0
+        # Assume multiple files correspond to equivalent samplings
+        # of the same distributions
+        norm =nevtsDict[inputFile]/modelDict['Total MC Events']
 
         for ievt in range(nevts):    
             
@@ -262,13 +252,14 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
             trackless_acc = eventAcc(jets,jetsDisp,sr='Trackless')                        
 
 
-            cutFlowHighPT["Total"] += ns
-            cutFlowTrackless["Total"] += ns
+            cutFlowHighPT["Total"] += (ns,ns**2)
+            cutFlowTrackless["Total"] += (ns,ns**2)
+
             if (not highPT_acc) and (not trackless_acc):
                 continue
 
-            cutFlowHighPT["Jet selection"] += ns*highPT_acc
-            cutFlowTrackless["Jet selection"] += ns*trackless_acc
+            cutFlowHighPT["Jet selection"] += (ns*highPT_acc,(ns*highPT_acc)**2)
+            cutFlowTrackless["Jet selection"] += (ns*trackless_acc,(ns*trackless_acc)**2)
             
             # Event efficiency
             highPT_eff = eventEff(jets,llps,sr='HighPT')
@@ -286,8 +277,8 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
             
             # Add to the total weight in each SR:
-            cutFlowHighPT["DV selection"] += ns*highPT_acc*highPT_eff*wvertex
-            cutFlowTrackless["DV selection"] += ns*trackless_acc*trackless_eff*wvertex
+            cutFlowHighPT["DV selection"] += (ns*highPT_acc*highPT_eff*wvertex,(ns*highPT_acc*highPT_eff*wvertex)**2)
+            cutFlowTrackless["DV selection"] += (ns*trackless_acc*trackless_eff*wvertex,(ns*trackless_acc*trackless_eff*wvertex)**2)
 
         f.Close()
     progressbar.finish()
@@ -295,15 +286,27 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
+
+    cutFlowDicts = {'HighPT' : cutFlowHighPT, 'Trackless' : cutFlowTrackless}
+    cutFlowErrDict = {}
+    for sr, cutFlow in cutFlowDicts.items():
+        cutFlowErrDict[sr] = {k : np.sqrt(v[1]) for k,v in cutFlow.items()}
+        cutFlowDicts[sr] = {k : v[0] for k,v in cutFlow.items()}
+
     # Compute normalized cutflow
-    for cutFlow in [cutFlowHighPT,cutFlowTrackless]:
+    for sr,cutFlow in cutFlowDicts.items():
+        cutFlowErr = cutFlowErrDict[sr]
         for key,val in cutFlow.items():
             if key == 'Total':
                 continue
             valRound = float('%1.3e' %val)
             valNorm = float('%1.3e' %(val/cutFlow['Total']))
             cutFlow[key] = (valRound,valNorm)
+            errRound = float('%1.3e' %cutFlowErr[key])
+            errNorm = float('%1.3e' %(cutFlowErr[key]/cutFlow['Total']))
+            cutFlowErr[key] = (errRound,errNorm)
         cutFlow['Total'] = (float('%1.3e' %cutFlow['Total']),1.0)
+        cutFlowErr['Total'] = (float('%1.3e' %cutFlowErr['Total']),0.0)
 
     
     # Create a dictionary for storing data
@@ -311,18 +314,23 @@ def getRecastData(inputFiles,normalize=False,model='strong'):
     dataDict['Luminosity (1/fb)'] = []
     dataDict['SR'] = []
     dataDict['$N_s$'] = []
+    dataDict['$N_s$ Err'] = []
     dataDict['AccEff'] = []
-    # Signal regions
-    cutFlows = {'HighPT' : cutFlowHighPT, 'Trackless' : cutFlowTrackless}
-    for sr,cutFlow in cutFlows.items():
+    dataDict['AccEffErr'] = []
+    for sr,cutFlow in cutFlowDicts.items():
+        cutFlowErr = cutFlowErrDict[sr]
         dataDict['Luminosity (1/fb)'].append(lumi)
         dataDict['SR'].append(sr)
         dataDict['$N_s$'].append(cutFlow["DV selection"][0])
+        dataDict['$N_s$ Err'].append(cutFlowErr["DV selection"][0])
         dataDict['AccEff'].append(cutFlow["DV selection"][1])
+        dataDict['AccEffErr'].append(cutFlowErr["DV selection"][1])
         for cut in cutFlow:
             if cut not in dataDict:
                 dataDict[cut] = []
+                dataDict[cut+' Error'] = []
             dataDict[cut].append(cutFlow[cut])
+            dataDict[cut+' Error'].append(cutFlowErr[cut])
 
     # Expand modelDict to match number of rows in dataDict:
     for key,val in modelDict.items():

@@ -24,11 +24,15 @@ def computeULs(inputFile,outputFile,kfactor=1.0,deltas=0.25):
     for _,row in recastData.iterrows():
         S95obs = atlasUL[row['SR']]['S95_obs']
         S95exp = atlasUL[row['SR']]['S95_exp']
-        robs.append(row['$N_s$']*kfactor/S95obs)
-        rexp.append(row['$N_s$']*kfactor/S95exp)
+        robs.append((row['$N_s$']*kfactor/S95obs,row['$N_s$ Err']*kfactor/S95obs))
+        rexp.append((row['$N_s$']*kfactor/S95exp,row['$N_s$ Err']*kfactor/S95exp))
 
-    recastData['robs'] = robs
-    recastData['rexp'] = rexp
+    robs = np.array(robs)
+    rexp = np.array(rexp)
+    recastData['robs'] = robs[:,0]
+    recastData['rexp'] = rexp[:,0]
+    recastData['robsErr'] = robs[:,1]
+    recastData['rexpErr'] = rexp[:,1]
     recastData['kfactor'] = kfactor
 
 
