@@ -171,7 +171,10 @@ def getCutFlow(inputFiles,model='bb'):
     cutFlowErr['Total'] = 0.0
 
     for k,v in cutFlow.items():
-        print('%s : %1.3e +- %1.1f%%' %(k,v,1e2*cutFlowErr[k]/v))
+        if v != 0.0:
+            print('%s : %1.3e +- %1.1f%%' %(k,v,1e2*cutFlowErr[k]/v))
+        else:
+            print('%s : %1.3e +- ??' %(k,v))
 
 
     return cutFlow
