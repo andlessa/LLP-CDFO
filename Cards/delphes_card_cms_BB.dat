@@ -47,7 +47,6 @@ set ExecutionPath {
   DMMissingET
   
   FastJetFinder
-  FatJetFinder
 
   JetEnergyScale
 

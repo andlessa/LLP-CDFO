@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 
-import os,glob
-from typing import Any
+import os
 import numpy as np
 import pandas as pd
-import glob
-import pyslha
 import time
 import progressbar as P
 import sys
 from ATLAS_data.effFunctions import eventEff,vertexEff
-from atlas_susy_2016_08_Recast import (getLLPs, getJets, eventAcc, 
-                                       vertexAcc, getModelDict)
+sys.path.append('../')
+from helper import getLLPs,getJets,getModelDict
+from atlas_susy_2016_08_Recast import eventAcc, vertexAcc
 
 
 delphesDir = os.path.abspath("../DelphesLLP")

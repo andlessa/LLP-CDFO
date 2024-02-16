@@ -5,9 +5,11 @@ import numpy as np
 import pandas as pd
 import time
 import progressbar as P
+import sys
+sys.path.append('../')
+from helper import getLLPs,getJets,getDisplacedJets,getModelDict
 from ATLAS_data.effFunctions import eventEff,vertexEff
-from atlas_susy_2018_13_Recast import (getLLPs, getJets, getDisplacedJets, eventAcc, 
-                                       vertexAcc, getModelDict)
+from atlas_susy_2018_13_Recast import eventAcc, vertexAcc
 
 delphesDir = os.path.abspath("../DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
@@ -22,7 +24,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getcutFlow(inputFiles,normalize=False,model='bb',sr='HighPT',nevtsMax=-1):
+def getcutFlow(inputFiles,model='bb',sr='HighPT',nevtsMax=-1):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -183,8 +185,6 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data. '
                  + 'If not defined, will use the name of the first input file', 
             default = None)
-    ap.add_argument('-n', '--normalize', required=False,action='store_true',
-            help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
     ap.add_argument('-s', '--SR', required=False,type=str,default='HighPT',
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     if os.path.splitext(outputFile)[1] != '.pcl':
         outputFile = os.path.splitext(outputFile)[0] + '.pcl'
 
-    cutFlow = getcutFlow(inputFiles,args.normalize,args.model,args.SR,args.nevts)
+    cutFlow = getcutFlow(inputFiles,args.model,args.SR,args.nevts)
 
     # ### Save DataFrame to pickle file
     # #### Create pandas DataFrame

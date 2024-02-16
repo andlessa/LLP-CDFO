@@ -1,24 +1,19 @@
 #!/usr/bin/env python3
 
-import os,glob
-from typing import Any
+import os
 import numpy as np
 import pandas as pd
-import glob
-import pyslha
 import time
 import progressbar as P
 import sys
 sys.path.append('../')
-from helper import LLP
+from helper import getLLPs,getJets,getDisplacedJets,getModelDict
 from ATLAS_data.effFunctions import eventEff,vertexEff
 
 delphesDir = os.path.abspath("../DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
 
 import ROOT
-import xml.etree.ElementTree as ET
-
 
 ROOT.gSystem.Load(os.path.join(delphesDir,"libDelphes.so"))
 
@@ -26,71 +21,7 @@ ROOT.gInterpreter.Declare('#include "classes/SortableObject.h"')
 ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
-def getLLPs(llpList,directDaughters,finalDaughters,
-            maxMomViolation=5e-2,trackEff=1.0):
 
-    llps = []
-    for ip in range(llpList.GetEntries()):
-        p = llpList.At(ip)        
-        # Get direct daughters
-        llp_ddaughters = []        
-        for d in directDaughters:
-            if d.M1 == ip:
-                llp_ddaughters.append(d)
-        # Get final daughters
-        llp_fdaughters = []
-        for d in finalDaughters:
-            if d.M1 == ip:
-                llp_fdaughters.append(d)
-        
-        # Get final daughters
-        llps.append(LLP(p,llp_ddaughters,llp_fdaughters,maxMomViolation,trackEff))
-        
-    return llps
-
-def getJets(jets,pTmin=50.0,etaMax=5.0):
-    """
-    Select jets with pT > pTmin and |eta| < etaMax
-    """
-
-    jetsSel = []
-    for ijet in range(jets.GetEntries()):
-        jet = jets.At(ijet)
-        if jet.PT < pTmin:
-            continue
-        if abs(jet.Eta) > etaMax:
-            continue
-        jetsSel.append(jet)
-    
-    return jetsSel
-
-def getDisplacedJets(jets,llps,skipPIDs=[1000022]):
-    """
-    Select from the list of all jets, the displaced jets associated
-    with a LLP decay.
-    """
-
-    displacedJets = []
-    for jet in jets:
-        deltaRmin = 0.3
-        llpMatch = None
-        for llp in llps: 
-            for daughter in llp.directDaughters:
-                if abs(daughter.PID) in skipPIDs:
-                    continue
-                deltaR = np.sqrt((jet.Eta-daughter.Eta)**2 + (jet.Phi-daughter.Phi)**2)
-                if deltaR < deltaRmin:
-                    deltaRmin = deltaR
-                    llpMatch = llp # Store LLP parent
-        
-        jet.llp = llpMatch
-        if llpMatch is not None:
-            R = np.sqrt(llpMatch.Xd**2 + llpMatch.Yd**2 + llpMatch.Zd**2)
-            if R > 3870:
-                continue
-            displacedJets.append(jet)
-    
-    return displacedJets
 
 def eventAcc(jets,jetsDisp,sr):
     passAcc = 0.0
@@ -143,50 +74,6 @@ def vertexAcc(llp,Rmax=np.inf,zmax=np.inf,Rmin=0.0,d0min=0.0,nmin=0,mDVmin=0):
         
     return passAcc
     
-def getModelDict(inputFiles,model):
-
-    if model == 'ewk':
-        LLP = 1000022
-        LSP = 1000024
-    elif model == 'strong':
-        LLP = 1000022
-        LSP = 1000021
-    elif model == 'gluino':
-        LLP = 1000021
-        LSP = 1000022
-    elif model == 'sbottom':
-        LLP = 1000005
-        LSP = 1000022        
-    else:
-        raise ValueError("Unreconized model %s" %model)
-
-    modelInfoDict = {}
-    f = inputFiles[0]
-    if not os.path.isfile(f):
-        print('File %s not found' %f)
-        raise OSError()
-    parsDict = {}    
-    for banner in glob.glob(os.path.join(os.path.dirname(f),'*banner*txt')):
-        with open(banner,'r') as ff:
-            slhaData = ff.read().split('<slha>')[1].split('</slha>')[0]
-            slhaData = pyslha.readSLHA(slhaData)
-    parsDict = {}
-    parsDict['mLLP'] = slhaData.blocks['MASS'][LLP]
-    parsDict['mLSP'] = slhaData.blocks['MASS'][LSP]
-    parsDict['width'] = slhaData.decays[LLP].totalwidth
-    if parsDict['width']:
-        parsDict['tau_ns'] = (6.582e-25/parsDict['width'])*1e9
-    else:
-        parsDict['tau_ns'] = np.inf    
-
-    modelInfoDict.update(parsDict)
-    print('mLLP = ',parsDict['mLLP'])
-    print('width (GeV) = ',parsDict['width'])
-    print('tau (ns) = ',parsDict['tau_ns'])
-
-    return modelInfoDict
-
-# ### Define dictionary to store data
 def getRecastData(inputFiles,normalize=False,model='strong'):
 
     if len(inputFiles) > 1:
