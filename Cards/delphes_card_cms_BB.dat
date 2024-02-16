@@ -47,6 +47,7 @@ set ExecutionPath {
   DMMissingET
   
   FastJetFinder
+  FastJetFinderDisp
 
   JetEnergyScale
 
@@ -703,41 +704,26 @@ module FastJetFinder FastJetFinder {
   set JetPTMin 20.0
 }
 
-##################
-# Fat Jet finder
-##################
 
-module FastJetFinder FatJetFinder {
+
+#####################################
+# Jet finder Without Displaced Tracks
+#####################################
+
+module FastJetFinder FastJetFinderDisp {
+#  set InputArray Calorimeter/towers
   set InputArray EFlowMerger/eflow
 
   set OutputArray jets
 
   # algorithm: 1 CDFJetClu, 2 MidPoint, 3 SIScone, 4 kt, 5 Cambridge/Aachen, 6 antikt
   set JetAlgorithm 6
-  set ParameterR 0.8
+  set ParameterR 0.4
+  set RemoveDispTracks true
+  set MaxTrackRDV 4.0  
 
-  set ComputeNsubjettiness 1
-  set Beta 1.0
-  set AxisMode 4
-
-  set ComputeTrimming 1
-  set RTrim 0.2
-  set PtFracTrim 0.05
-
-  set ComputePruning 1
-  set ZcutPrun 0.1
-  set RcutPrun 0.5
-  set RPrun 0.8
-
-  set ComputeSoftDrop 1
-  set BetaSoftDrop 0.0
-  set SymmetryCutSoftDrop 0.1
-  set R0SoftDrop 0.8
-
-  set JetPTMin 200.0
+  set JetPTMin 20.0
 }
-
-
 
 
 ##################
@@ -841,10 +827,15 @@ module UniqueObjectFinder UniqueObjectFinder {
 module TreeWriter TreeWriter {
 # add Branch InputArray BranchName BranchClass
 
+  add Branch Delphes/stableParticles StableParticle GenParticle
+
   add Branch DMFilter/dmParticles dmParticles GenParticle
 
   add Branch GenMissingET/momentum GenMissingET MissingET
   add Branch DMMissingET/momentum DMMissingET MissingET  
+
+  add Branch FastJetFinder/jets JetAll Jet
+  add Branch FastJetFinderDisp/jets JetDisp Jet
  
   add Branch UniqueObjectFinder/jets Jet Jet
   add Branch UniqueObjectFinder/electrons Electron Electron
