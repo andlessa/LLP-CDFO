@@ -8,6 +8,8 @@
 set ExecutionPath {
 
   VisibleFilter
+  
+  LLPFilter
 
   ParticlePropagator
 
@@ -86,12 +88,27 @@ module PdgCodeFilter VisibleFilter {
 }
 
 
+#####################################
+# LLPFilter - remove displaced tracks
+#####################################
+
+module LLPFilter LLPFilter {
+  set InputArray VisibleFilter/visibleParticles
+  set OutputArray pvParticles
+
+  set PTMin 0.0
+  set OnlyCharged true
+  set RDVmax 2.0
+
+}
+
+
 #################################
 # Propagate particles in cylinder
 #################################
 
 module ParticlePropagator ParticlePropagator {
-  set InputArray VisibleFilter/visibleParticles
+  set InputArray LLPFilter/pvParticles
 
   set OutputArray stableParticles
   set ChargedHadronOutputArray chargedHadrons
