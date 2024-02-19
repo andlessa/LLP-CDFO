@@ -2,6 +2,9 @@
 # Order of execution of various modules
 #######################################
 
+#set MaxEvents 10
+#set RandomSeed 123
+
 set ExecutionPath {
 
   VisibleFilter
@@ -40,14 +43,16 @@ set ExecutionPath {
   MissingET
 
   NeutrinoFilter
-  GenJetFinder
   GenMissingET
   
+  BSMFilter  
   DMFilter
   DMMissingET
-  
-  FastJetFinder
-  FastJetFinderDisp
+
+  FastJetFinder 
+  GenJetFinder 
+  GenJetFinderPV
+
 
   JetEnergyScale
 
@@ -72,19 +77,37 @@ module PdgCodeFilter VisibleFilter {
   set InputArray Delphes/stableParticles
   set OutputArray visibleParticles
   
-  add PdgCode {5000012}
-  add PdgCode {-5000012}
   add PdgCode {1000022}
   add PdgCode {-1000022}
+  add PdgCode {12}
+  add PdgCode {14}
+  add PdgCode {16}
+  add PdgCode {-12}
+  add PdgCode {-14}
+  add PdgCode {-16} 
 
 }
+
+
+######################
+# LLPFilter
+######################
+
+module PdgCodeFilter LLPFilter {
+  set InputArray VisibleFilter/visibleParticles
+  set OutputArray pvParticles
+  
+  
+
+}
+
 
 #################################
 # Propagate particles in cylinder
 #################################
 
 module ParticlePropagator ParticlePropagator {
-  set InputArray VisibleFilter/visibleParticles
+  set InputArray LLPFilter/pvParticles
 
   set OutputArray stableParticles
   set ChargedHadronOutputArray chargedHadrons
@@ -307,6 +330,7 @@ module SimpleCalorimeter ECal {
   add EnergyFraction {16} {0.0}
   add EnergyFraction {5000012} {0.0}     
   add EnergyFraction {1000022} {0.0}
+  add EnergyFraction {1000005} {0.0}  
   add EnergyFraction {1000023} {0.0}
   add EnergyFraction {1000025} {0.0}
   add EnergyFraction {1000035} {0.0}
@@ -391,10 +415,8 @@ module SimpleCalorimeter HCal {
   add EnergyFraction {13} {0.0}
   add EnergyFraction {14} {0.0}
   add EnergyFraction {16} {0.0}
-  add EnergyFraction {51} {0.0}      
-  add EnergyFraction {52} {0.0}
-  add EnergyFraction {5000012} {0.0}
   add EnergyFraction {1000022} {0.0}
+  add EnergyFraction {1000005} {0.0}  
   add EnergyFraction {1000023} {0.0}
   add EnergyFraction {1000025} {0.0}
   add EnergyFraction {1000035} {0.0}
@@ -605,10 +627,10 @@ module Merger ScalarHT {
 
 
 #####################
-# Neutrino Filter
+# Invisible Filter
 #####################
 
-module PdgCodeFilter NeutrinoFilter {
+module PdgCodeFilter InvisibleFilter {
 
   set InputArray Delphes/stableParticles
   set OutputArray filteredParticles
@@ -618,32 +640,37 @@ module PdgCodeFilter NeutrinoFilter {
   add PdgCode {12}
   add PdgCode {14}
   add PdgCode {16}
-  add PdgCode {51}    
-  add PdgCode {52}  
   add PdgCode {-12}
   add PdgCode {-14}
   add PdgCode {-16}
-  add PdgCode {-51}    
-  add PdgCode {-52}  
-  add PdgCode {5000039}
-  add PdgCode {-5000039}
+  add PdgCode {1000022}
+  add PdgCode {-1000022}
+    
 }
 
 
 #####################
-# MC truth jet finder
+# BSM Filter
 #####################
 
-module FastJetFinder GenJetFinder {
-  set InputArray NeutrinoFilter/filteredParticles
+module BSMFilter BSMFilter {
 
-  set OutputArray jets
+  set InputArray Delphes/allParticles
+  set OutputArray bsmParticles
+  set FinalDaughtersArray finalDaughters  
+  set DirectDaughtersArray directDaughters  
+  set PTMin 0.0
+  set massMin 50.0
 
-  # algorithm: 1 CDFJetClu, 2 MidPoint, 3 SIScone, 4 kt, 5 Cambridge/Aachen, 6 antikt
-  set JetAlgorithm 6
-  set ParameterR 0.4
-
-  set JetPTMin 20.0
+  # Pythia StatusCode = 106:
+  # subdivision of an R-hadron into its flavour content, 
+  # in preparation of the decay of the heavy new particle, if it is unstable
+  add StatusCode {106} 
+  add StatusCode {-106}  
+  
+  # Select sbottoms
+  add PdgCode {1000005}
+  add PdgCode {-1000005}
 }
 
 #####################
@@ -662,8 +689,6 @@ module PdgCodeFilter DMFilter {
 
   add PdgCode {1000022}
   add PdgCode {-1000022}
-  add PdgCode {5000012}
-  add PdgCode {-5000012}
 }
 
 #########################
@@ -671,7 +696,7 @@ module PdgCodeFilter DMFilter {
 ########################
 
 module Merger GenMissingET {
-  add InputArray NeutrinoFilter/filteredParticles
+  add InputArray InvisibleFilter/filteredParticles
   set MomentumOutputArray momentum
 }
 
@@ -700,27 +725,6 @@ module FastJetFinder FastJetFinder {
   # algorithm: 1 CDFJetClu, 2 MidPoint, 3 SIScone, 4 kt, 5 Cambridge/Aachen, 6 antikt
   set JetAlgorithm 6
   set ParameterR 0.4
-
-  set JetPTMin 20.0
-}
-
-
-
-#####################################
-# Jet finder Without Displaced Tracks
-#####################################
-
-module FastJetFinder FastJetFinderDisp {
-#  set InputArray Calorimeter/towers
-  set InputArray EFlowMerger/eflow
-
-  set OutputArray jets
-
-  # algorithm: 1 CDFJetClu, 2 MidPoint, 3 SIScone, 4 kt, 5 Cambridge/Aachen, 6 antikt
-  set JetAlgorithm 6
-  set ParameterR 0.4
-  set RemoveDispTracks true
-  set MaxTrackRDV 4.0  
 
   set JetPTMin 20.0
 }
@@ -829,13 +833,17 @@ module TreeWriter TreeWriter {
 
   add Branch Delphes/stableParticles StableParticle GenParticle
 
+  add Branch BSMFilter/finalDaughters bsmFinalDaughters GenParticle
+  add Branch BSMFilter/directDaughters bsmDirectDaughters GenParticle
+  add Branch BSMFilter/bsmParticles bsm GenParticle
+
   add Branch DMFilter/dmParticles dmParticles GenParticle
 
   add Branch GenMissingET/momentum GenMissingET MissingET
   add Branch DMMissingET/momentum DMMissingET MissingET  
 
-  add Branch FastJetFinder/jets JetAll Jet
-  add Branch FastJetFinderDisp/jets JetDisp Jet
+  add Branch GenJetFinder/jets JetAll Jet
+  add Branch GenJetFinderPV/jets JetPV Jet
  
   add Branch UniqueObjectFinder/jets Jet Jet
   add Branch UniqueObjectFinder/electrons Electron Electron
