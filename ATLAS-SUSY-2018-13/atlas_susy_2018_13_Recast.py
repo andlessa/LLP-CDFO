@@ -7,7 +7,7 @@ import time
 import progressbar as P
 import sys
 sys.path.append('../')
-from helper import getLLPs,getJets,getDisplacedJets,getModelDict
+from helper import getLLPs,getJets,getDisplacedJets,getModelDict,splitModels
 from ATLAS_data.effFunctions import eventEff,vertexEff
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -74,14 +74,15 @@ def vertexAcc(llp,Rmax=np.inf,zmax=np.inf,Rmin=0.0,d0min=0.0,nmin=0,mDVmin=0):
         
     return passAcc
     
-def getRecastData(inputFiles,normalize=False,model='strong'):
+def getRecastData(inputFiles,model='strong',modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
         for f in inputFiles:
             print(f)
 
-    modelDict = getModelDict(inputFiles,model)
+    if modelDict is None:
+        modelDict = getModelDict(inputFiles[0],model)
     if not modelDict:
         modelDict = {}
 
@@ -243,8 +244,6 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data. '
                  + 'If not defined, will use the name of the first input file', 
             default = None)
-    ap.add_argument('-n', '--normalize', required=False,action='store_true',
-            help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
 
@@ -270,22 +269,28 @@ if __name__ == "__main__":
     args = ap.parse_args()
     inputFiles = args.inputFile
     outputFile = args.outputFile
-    if outputFile is None:
-        outputFile = inputFiles[0].replace('delphes_events.root','atlas_2018_13.pcl')
+    
+    # Split input files by distinct models and get recast data for
+    # the set of files from the same model:
+    for fileList,mDict in splitModels(inputFiles,args.model):
+        dataDict = getRecastData(fileList,args.model,mDict)
+        if args.verbose == 'debug':
+            for k,v in dataDict.items():
+                print(k,v)
 
-    if os.path.splitext(outputFile)[1] != '.pcl':
-        outputFile = os.path.splitext(outputFile)[0] + '.pcl'
+        if outputFile is None:
+            outFile = fileList[0].replace('delphes_events.root','atlas_2018_13.pcl')
+        else:
+            outFile = outputFile[:]
 
-    dataDict = getRecastData(inputFiles,args.normalize,args.model)
-    if args.verbose == 'debug':
-        for k,v in dataDict.items():
-            print(k,v)
+        if os.path.splitext(outFile)[1] != '.pcl':
+            outFile = os.path.splitext(outFile)[0] + '.pcl'
 
-    # #### Create pandas DataFrame
-    df = pd.DataFrame.from_dict(dataDict)
-
-    # ### Save DataFrame to pickle file
-    print('Saving to',outputFile)
-    df.to_pickle(outputFile)
+        # #### Create pandas DataFrame
+        df = pd.DataFrame.from_dict(dataDict)
+        # ### Save DataFrame to pickle file
+        print('Saving to',outFile)
+        df.to_pickle(outFile)
+        print('\n\n')
 
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))

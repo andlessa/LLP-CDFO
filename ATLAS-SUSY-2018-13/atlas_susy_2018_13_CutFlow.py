@@ -7,7 +7,7 @@ import time
 import progressbar as P
 import sys
 sys.path.append('../')
-from helper import getLLPs,getJets,getDisplacedJets,getModelDict
+from helper import getLLPs,getJets,getDisplacedJets,getModelDict,splitModels
 from ATLAS_data.effFunctions import eventEff,vertexEff
 from atlas_susy_2018_13_Recast import eventAcc, vertexAcc
 
@@ -24,14 +24,15 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getcutFlow(inputFiles,model='bb',sr='HighPT',nevtsMax=-1):
+def getcutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
         for f in inputFiles:
             print(f)
 
-    modelDict = getModelDict(inputFiles,model)
+    if modelDict is None:
+        modelDict = getModelDict(inputFiles[0],model)
     if not modelDict:
         modelDict = {}
 
@@ -215,18 +216,26 @@ if __name__ == "__main__":
     args = ap.parse_args()
     inputFiles = args.inputFile
     outputFile = args.outputFile
-    if outputFile is None:
-        outputFile = inputFiles[0].replace('delphes_events.root','atlas_2018_42_cutflow.pcl')
 
-    if os.path.splitext(outputFile)[1] != '.pcl':
-        outputFile = os.path.splitext(outputFile)[0] + '.pcl'
+    # Split input files by distinct models and get recast data for
+    # the set of files from the same model:
+    for fileList,mDict in splitModels(inputFiles,args.model):
+        cutFlow = getcutFlow(fileList,args.model,args.SR,args.nevts,mDict)
 
-    cutFlow = getcutFlow(inputFiles,args.model,args.SR,args.nevts)
+        if outputFile is None:
+            outFile = fileList[0].replace('delphes_events.root','atlas_2018_42_cutflow.pcl')
+        else:
+            outFile = outputFile[:]
 
-    # ### Save DataFrame to pickle file
-    # #### Create pandas DataFrame
-    df = pd.DataFrame.from_dict(cutFlow, orient='index')
-    print('Saving to',outputFile)
-    df.to_pickle(outputFile)
+        if os.path.splitext(outFile)[1] != '.pcl':
+            outFile = os.path.splitext(outFile)[0] + '.pcl'
+
+        # #### Create pandas DataFrame
+        df = pd.DataFrame.from_dict(cutFlow)
+
+        # ### Save DataFrame to pickle file
+        print('Saving to',outFile)
+        df.to_pickle(outFile)
+        print('\n\n')
 
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))

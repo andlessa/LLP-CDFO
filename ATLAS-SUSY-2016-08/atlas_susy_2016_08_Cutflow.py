@@ -8,7 +8,7 @@ import progressbar as P
 import sys
 from ATLAS_data.effFunctions import eventEff,vertexEff
 sys.path.append('../')
-from helper import getLLPs,getJets,getModelDict
+from helper import getLLPs,getJets,getModelDict,splitModels
 from atlas_susy_2016_08_Recast import eventAcc, vertexAcc
 
 
@@ -26,14 +26,15 @@ ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,model='bb'):
+def getCutFlow(inputFiles,model='sbottom',modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
         for f in inputFiles:
             print(f)
 
-    modelDict = getModelDict(inputFiles,model)
+    if modelDict is None:
+        modelDict = getModelDict(inputFiles[0],model)
     if not modelDict:
         modelDict = {}
 
@@ -217,21 +218,28 @@ if __name__ == "__main__":
     args = ap.parse_args()
     inputFiles = args.inputFile
     outputFile = args.outputFile
-    if outputFile is None:
-        outputFile = inputFiles[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')
+    
+    # Split input files by distinct models and get recast data for
+    # the set of files from the same model:
+    for fileList,mDict in splitModels(inputFiles,args.model):
+        cutFlow = getCutFlow(fileList,args.model,mDict)
+        for key,val in cutFlow.items():
+            cutFlow[key] = [val]
 
-    if os.path.splitext(outputFile)[1] != '.pcl':
-        outputFile = os.path.splitext(outputFile)[0] + '.pcl'
+        if outputFile is None:
+            outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')
+        else:
+            outFile = outputFile[:]
 
-    cutFlow = getCutFlow(inputFiles,args.model)
-    for key,val in cutFlow.items():
-        cutFlow[key] = [val]
+        if os.path.splitext(outFile)[1] != '.pcl':
+            outFile = os.path.splitext(outFile)[0] + '.pcl'
 
-    # #### Create pandas DataFrame
-    df = pd.DataFrame.from_dict(cutFlow)
+        # #### Create pandas DataFrame
+        df = pd.DataFrame.from_dict(cutFlow)
 
-    # ### Save DataFrame to pickle file
-    print('Saving to',outputFile)
-    df.to_pickle(outputFile)
+        # ### Save DataFrame to pickle file
+        print('Saving to',outFile)
+        df.to_pickle(outFile)
+        print('\n\n')
 
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))

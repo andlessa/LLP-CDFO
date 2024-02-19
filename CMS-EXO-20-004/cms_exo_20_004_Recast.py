@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import os,glob
+import os
 import numpy as np
 import pandas as pd
 import glob
-import pyslha
 import time
+import sys
+sys.path.append('../')
+from helper import getModelDict,splitModels
 import progressbar as P
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -58,68 +60,21 @@ def passVetoPtMiss2018(met):
         return True
     return False
 
-
-def getModelDict(inputFiles):
-
-    # cmsColumns = ['Coupling', 'Mode', '$m_{med}$', '$M_{D}$' '$m_{DM}$', '$d$' '$g_{DM}$', '$g_{q}$']
-    modelDict = {}
-    # for column in cmsColumns:
-        # modelDict[column] = None
-    
-    # ## Get Model Parameters
-    banner = sorted(glob.glob(os.path.dirname(inputFiles[0])+'/*banner.txt'),key=os.path.getmtime,reverse=True)
-    if len(banner) == 0:
-        print('Banner not found for %s' %inputFiles[0])
-        return None
-    elif len(banner) > 1:        
-        print('\n%i banner files found in %s.' 
-            %(len(banner),os.path.dirname(inputFiles[0])))
-        f = os.path.basename(inputFiles[0])
-        matches = []
-        for b in banner:
-            if os.path.splitext(f)[0] in b:
-                banner = b
-                break
-            matches.append(set(f).intersection(set(os.path.basename(b))))
-        if isinstance(banner,list):
-            banner = banner[np.argmax(matches)]
-        print('Using banner %s'%banner)
-    else:
-        banner = banner[0]
-
-    xtree = ET.parse(banner)
-    xroot = xtree.getroot()
-    slha = xroot.find('header').find('slha').text
-    pars = pyslha.readSLHA(slha)
-    mDM = pars.blocks['MASS'][1000022]
-    mMed = pars.blocks['MASS'][1000005]
-    print('\nModel parameters:')
-    print('Msbottom = %1.2f GeV, mDM = %1.2f \n'  %(mMed,mDM))
-    modelDict['mLLP'] = mMed
-    modelDict['mLSP'] = mDM
-    modelDict['Coupling'] = 'sbottom'
-    modelDict['width'] = pars.decays[1000005].totalwidth
-    if modelDict['width']:
-        modelDict['tau_ns'] = (6.582e-25/modelDict['width'])*1e9
-    else:
-        modelDict['tau_ns'] = np.inf    
-
-
-
-    return modelDict
-
 # ### Define dictionary to store data
-def getRecastData(inputFiles,pTcut=150.0,normalize=False):
+def getRecastData(inputFiles,pTcut=150.0,model='dbottom',modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
         for f in inputFiles:
             print(f)
 
-    modelDict = getModelDict(inputFiles)
+    if modelDict is None:
+        modelDict = getModelDict(inputFiles[0],model)
     if not modelDict:
         modelDict = {}
+
     modelDict['Total MC Events'] = 0
+
     nevtsDict = {}
     # Get total number of events:
     for inputFile in inputFiles:
@@ -191,10 +146,7 @@ def getRecastData(inputFiles,pTcut=150.0,normalize=False):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        if normalize:
-            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
-        else:
-            norm = 1.0
+        norm =nevtsDict[inputFile]/modelDict['Total MC Events']
 
         for ievt in range(nevts):    
             
@@ -212,7 +164,6 @@ def getRecastData(inputFiles,pTcut=150.0,normalize=False):
             totalweightPB += weightPB
 
             missingET = tree.MissingET.At(0)
-        #         missingET = tree.GenMissingET.At(0)  # USE REAL MISSING ET!
             electrons = tree.Electron
             muons = tree.Muon
             photons = tree.Photon
@@ -404,12 +355,22 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-pt', '--pTcut', required=False,default=150.0,type=float,
             help='Gen level MET cut for computing partial cross-sections.')
-    ap.add_argument('-n', '--normalize', required=False,action='store_true',
-            help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
     
 
     ap.add_argument('-v', '--verbose', default='info',
             help='verbose level (debug, info, warning or error). Default is info')
+
+
+    # First make sure the correct env variables have been set:
+    import subprocess
+    import sys
+    LDPATH = subprocess.check_output('echo $LD_LIBRARY_PATH',shell=True,text=True)
+    ROOTINC = subprocess.check_output('echo $ROOT_INCLUDE_PATH',shell=True,text=True)
+    pythiaDir = os.path.abspath('../MG5/HEPTools/pythia8/lib')
+    delphesDir = os.path.abspath('../DelphesLLP/external')
+    if pythiaDir not in LDPATH or delphesDir not in ROOTINC:
+        print('Enviroment variables not properly set. Run source setenv.sh first.')
+        sys.exit()
 
 
     t0 = time.time()
@@ -418,19 +379,29 @@ if __name__ == "__main__":
     args = ap.parse_args()
     inputFiles = args.inputFile
     outputFile = args.outputFile
-    if outputFile is None:
-        outputFile = inputFiles[0].replace('delphes_events.root','cms_exo_20_004.pcl')
+    
+    # Split input files by distinct models and get recast data for
+    # the set of files from the same model:
+    for fileList,mDict in splitModels(inputFiles,args.model):
+        dataDict = getRecastData(fileList,args.pTcut,args.model,mDict)
+        if args.verbose == 'debug':
+            for k,v in dataDict.items():
+                print(k,v)
 
-    if os.path.splitext(outputFile)[1] != '.pcl':
-        outputFile = os.path.splitext(outputFile)[0] + '.pcl'
+        if outputFile is None:
+            outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004.pcl')
+        else:
+            outFile = outputFile[:]
 
-    modelDict = getRecastData(inputFiles,args.pTcut,args.normalize)
+        if os.path.splitext(outFile)[1] != '.pcl':
+            outFile = os.path.splitext(outFile)[0] + '.pcl'
+        
+        # #### Create pandas DataFrame
+        df = pd.DataFrame.from_dict(dataDict)
+        # ### Save DataFrame to pickle file
+        print('Saving to',outFile)
+        df.to_pickle(outFile)
+        print('\n\n')
 
-    # #### Create pandas DataFrame
-    df = pd.DataFrame.from_dict(modelDict)
-
-    # ### Save DataFrame to pickle file
-    print('Saving to',outputFile)
-    df.to_pickle(outputFile)
 
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))

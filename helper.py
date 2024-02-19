@@ -160,7 +160,7 @@ def getDisplacedJets(jets,llps,skipPIDs=[1000022]):
     
     return displacedJets
 
-def getModelDict(inputFiles,model):
+def getModelDict(inputFile,model,verbose=True):
 
     if model == 'ewk':
         LLP = 1000022
@@ -178,7 +178,7 @@ def getModelDict(inputFiles,model):
         raise ValueError("Unreconized model %s" %model)
 
     modelInfoDict = {}
-    f = inputFiles[0]
+    f = inputFile
     if not os.path.isfile(f):
         print('File %s not found' %f)
         raise OSError()
@@ -197,8 +197,31 @@ def getModelDict(inputFiles,model):
         parsDict['tau_ns'] = np.inf    
 
     modelInfoDict.update(parsDict)
-    print('mLLP = ',parsDict['mLLP'])
-    print('width (GeV) = ',parsDict['width'])
-    print('tau (ns) = ',parsDict['tau_ns'])
+    if verbose:
+        print('mLLP = ',parsDict['mLLP'])
+        print('width (GeV) = ',parsDict['width'])
+        print('tau (ns) = ',parsDict['tau_ns'])
 
     return modelInfoDict
+
+def splitModels(inputFiles,model='sbottom'):
+
+    # First extract the model for each file
+    fileModels = {}
+    for f in inputFiles:
+        modelDict = getModelDict(f,model=model,verbose=False)
+        fileModels[f] = modelDict
+
+    uniqueModels = []
+    for mDict in fileModels.values():
+        if mDict not in uniqueModels:
+            uniqueModels.append(mDict)
+    uniqueModels = sorted(uniqueModels, key= lambda d: list(d.values()))
+
+    print('Splitting %i files into %i models' %(len(inputFiles),len(uniqueModels)))
+    # Now group together files with the same model
+    # Get list of unique dictionaries
+    for mDict in uniqueModels:        
+        fileList = [f for f in fileModels if fileModels[f] == mDict]
+        print('\t Model: %s (%i files)' %(mDict,len(fileList)))
+        yield (fileList,mDict)
