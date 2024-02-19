@@ -41,8 +41,6 @@ set ExecutionPath {
   MuonIsolation
 
   MissingET
-
-  NeutrinoFilter
   GenMissingET
   
   BSMFilter  
