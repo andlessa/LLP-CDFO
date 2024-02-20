@@ -61,7 +61,7 @@ def passVetoPtMiss2018(met):
     return False
 
 # ### Define dictionary to store data
-def getRecastData(inputFiles,pTcut=150.0,model='dbottom',modelDict=None):
+def getRecastData(inputFiles,pTcut=150.0,model='sbottom',modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -353,8 +353,11 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data.'
                  + 'If not defined, will use the name of the first input file', 
             default = None)
-    ap.add_argument('-pt', '--pTcut', required=False,default=150.0,type=float,
+    ap.add_argument('-pt', '--pTcut', required=False,default=0.0,type=float,
             help='Gen level MET cut for computing partial cross-sections.')
+    ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
+            help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
+
     
 
     ap.add_argument('-v', '--verbose', default='info',
