@@ -4,13 +4,11 @@ import os
 import numpy as np
 import pandas as pd
 import time
-import progressbar as P
 import sys
-from ATLAS_data.effFunctions import eventEff,vertexEff
 sys.path.append('../')
-from helper import getLLPs,getJets,getModelDict,splitModels
-from atlas_susy_2016_08_Recast import eventAcc, vertexAcc
-
+from helper import getModelDict,splitModels
+from cms_exo_20_004_Recast import passVetoJets2018,passVetoPtMiss2018
+import progressbar as P
 
 delphesDir = os.path.abspath("../DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
@@ -24,6 +22,7 @@ ROOT.gSystem.Load(os.path.join(delphesDir,"libDelphes.so"))
 ROOT.gInterpreter.Declare('#include "classes/SortableObject.h"')
 ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
+
 
 # ### Define dictionary to store data
 def getCutFlow(inputFiles,model='sbottom',modelDict=None):
@@ -50,17 +49,39 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None):
         nevtsDict[inputFile] = nevts
         f.Close()
 
+    # ## Cuts
+    ## jets
+    pTj1min = 100.
+    pTjmin = 20.
+    etamax = 2.4
+    ## MET
+    minMET = 250.
+    ## Electrons
+    pTmin_el = 10.
+    etamax_el = 2.5
+    nMax_el = 0
+    ## Photons
+    pTmin_a = 15.
+    etamax_a = 2.5
+    nMax_a = 0
+    ## Muons
+    pTmin_mu = 10.
+    etamax_mu = 2.4
+    nMax_mu = 0
+    ## Tau jets
+    nMax_tau = 0
+    etatau_max = 2.3
+    pTtau_min = 18.0
+    ## b jets
+    nMax_b = 0
+    etab_max = 2.4
+    pTb_min = 20.0
 
-    lumi = 32.8
+    lumi =  59.7
     totalweightPB = 0.0
-    # Keep track of yields for each dataset
-    keys = ["Total", "$MET > 200$ GeV", "Jet Selection", 
-            "$R_{xy},z <$ 300 mm", "$R_{DV} > 4$ mm",
-            "$d_0 > 2$ mm", "$nTracks >= 5$",
-            "$mDV > 10$ GeV",  "+Evt Eff", "+DV Eff"]
+    keys = ['Total','Triggeremulation','$MET > 250$ GeV', 'Electronveto','Muonveto', 'Tauveto', 'Bjetveto', 'Photonveto','$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad','LeadingAK4jet$p_{T}>100$GeV', 'LeadingAK4jet$\eta<2.4$',  'HCALmitigation(jets)','HCALmitigation($\phi^{miss}$)']
     cutFlow = { k : np.zeros(2) for k in keys}
-    
-    
+
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
@@ -68,7 +89,6 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None):
     progressbar.start()
 
     ntotal = 0
-    totalweightPB = 0.0
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
@@ -79,78 +99,118 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None):
             
             ntotal += 1
             progressbar.update(ntotal)
-            tree.GetEntry(ievt)   
-            weightPB = tree.Weight.At(1).Weight     
+            tree.GetEntry(ievt)        
+
+            jets = tree.Jet
+            try:
+                weightPB = tree.Weight.At(1).Weight
+            except:
+                weightPB = tree.Weight.At(0).Weight
             weightPB = weightPB*norm
-            totalweightPB += weightPB
             ns = weightPB*1e3*lumi # number of signal events
+            totalweightPB += weightPB
 
-            jets = getJets(tree.GenJet,pTmin=25.,etaMax=5.0)
-            met = tree.GenMissingET.At(0).MET
+            missingET = tree.MissingET.At(0)
+            electrons = tree.Electron
+            muons = tree.Muon
+            photons = tree.Photon
 
-            cutFlow["Total"] += (ns,ns**2)
+            # Filter electrons:
+            electronList = []
+            for iel in range(electrons.GetEntries()):
+                electron = electrons.At(iel)
+                if electron.PT < pTmin_el:
+                    continue
+                if abs(electron.Eta) > etamax_el:
+                    continue
+                electronList.append(electron)
 
-            if met < 200.0:
+            # Filter muons:
+            muonList = []
+            for imu in range(muons.GetEntries()):
+                muon = muons.At(imu)
+                if muon.PT < pTmin_mu:
+                    continue
+                if abs(muon.Eta) > etamax_mu:
+                    continue
+                muonList.append(muon)
+
+            # Filter photons:
+            photonList = []
+            for ia in range(photons.GetEntries()):
+                photon = photons.At(ia)
+                if photon.PT < pTmin_a:
+                    continue
+                if abs(photon.Eta) > etamax_a:
+                    continue
+                photonList.append(photon)            
+
+            # Filter jets
+            jetList = []
+            bjetList = []
+            taujetList = []
+            for ijet in range(jets.GetEntries()):
+                jet = jets.At(ijet)
+                if jet.BTag and jet.PT > pTb_min and abs(jet.Eta) < etab_max:
+                    bjetList.append(jet)
+                elif jet.TauTag and jet.PT > pTtau_min and abs(jet.Eta) < etatau_max:
+                    taujetList.append(jet)
+                elif jet.PT > pTjmin and abs(jet.Eta) < etamax:
+                    jetList.append(jet)  
+            jetList = sorted(jetList, key = lambda j: j.PT, reverse=True)    
+
+            if len(jetList) > 0:
+                deltaPhi = np.abs(jetList[0].Phi-missingET.Phi) 
+            else:
+                deltaPhi = 0.0
+                        
+            cutFlow['Total'] += (ns,ns**2)
+
+            # Apply cuts:
+            ## Apply trigger efficiency
+            # ns = ns*triggerEff
+            if missingET.MET < 120.0:
                 continue
+            cutFlow['Triggeremulation'] += (ns,ns**2)
 
-            cutFlow["$MET > 200$ GeV"] += (ns,ns**2)
-
-
-            # Event acceptance
-            evt_acc = eventAcc(jets,met,metCut=200.0,
-                               maxJetChargedPT=5.0,minJetPt1=70.,
-                               minJetPt2=25.)
-            
-            if (not evt_acc):
+            ## Cut on MET
+            if missingET.MET < minMET: continue              
+            cutFlow['$MET > 250$ GeV'] += (ns,ns**2)
+            ## Veto electrons
+            if len(electronList) > nMax_el: continue  
+            cutFlow['Electronveto'] += (ns,ns**2)
+            ## Veto muons
+            if len(muonList) > nMax_mu: continue  
+            cutFlow['Muonveto'] += (ns,ns**2)
+            ## Veto tau jets
+            if len(taujetList) > nMax_tau: continue  
+            cutFlow['Tauveto'] += (ns,ns**2)
+            ## Veto b jets
+            if len(bjetList) > nMax_b: continue  
+            cutFlow['Bjetveto'] += (ns,ns**2)
+            ## Veto photons
+            if len(photonList) > nMax_a: continue  
+            cutFlow['Photonveto'] += (ns,ns**2)
+            ## Delta Phi cut
+            if deltaPhi < 0.5: continue
+            cutFlow['$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad'] += (ns,ns**2)
+            ## Jet cuts
+            if len(jetList) < 1 or jetList[0].PT < pTj1min: continue
+            cutFlow['LeadingAK4jet$p_{T}>100$GeV'] += (ns,ns**2)
+            if abs(jetList[0].Eta) > etamax: continue
+            cutFlow['LeadingAK4jet$\eta<2.4$'] += (ns,ns**2)
+            if not passVetoJets2018(jetList):
                 continue
-
-            ns = ns*evt_acc
-            cutFlow["Jet Selection"] += (ns,ns**2)            
-
-            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
-
-
-            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0)]
-            if not llpsSel: continue
-            cutFlow["$R_{xy},z <$ 300 mm"] += (ns,ns**2)
-
-            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0)]
-            if not llpsSel: continue
-            cutFlow["$R_{DV} > 4$ mm"] += (ns,ns**2)
-
-            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0)]
-            if not llpsSel: continue
-            cutFlow["$d_0 > 2$ mm"] += (ns,ns**2)
-
-            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5)]
-            if not llpsSel: continue
-            cutFlow["$nTracks >= 5$"] += (ns,ns**2)
-
-            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0)]
-            if not llpsSel: continue
-            cutFlow["$mDV > 10$ GeV"] += (ns,ns**2)
-           
-            # Event efficiency
-            evt_eff = eventEff(met,llpsSel)
-            # Vertex acceptances:
-            v_acc = np.array([vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0) for llp in llps])
-            # Vertex efficiencies:
-            v_eff = np.array([vertexEff(llp) for llp in llps])
-
-            ns = ns*evt_eff
-
-            cutFlow["+Evt Eff"] += (ns,ns**2)
-            
-            wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
-
-            ns = ns*wvertex
-            
-            # Add to the total weight in each SR:
-            cutFlow["+DV Eff"] += (ns,ns**2)
+            cutFlow['HCALmitigation(jets)'] += (ns,ns**2)
+            if not passVetoPtMiss2018(missingET):
+                continue
+            cutFlow['HCALmitigation($\phi^{miss}$)'] += (ns,ns**2)
 
         f.Close()
     progressbar.finish()
 
+
+    # Store total (combined xsec)
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
@@ -175,7 +235,6 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None):
         else:
             print('%s : %1.3e +- ??' %(k,v))
 
-
     return cutFlow
 
 
@@ -183,13 +242,13 @@ if __name__ == "__main__":
     
     import argparse    
     ap = argparse.ArgumentParser( description=
-            "Run the recasting for ATLAS-SUSY-2018-13 using one or multiple Delphes ROOT files as input. "
+            "Run the recasting for CMS-EXO-20-004 using one or multiple Delphes ROOT files as input. "
             + "If multiple files are given as argument, add them (the samples weights will be normalized if -n is given)."
             + " Store the cutflow and SR bins in a pickle (Pandas DataFrame) file." )
     ap.add_argument('-f', '--inputFile', required=True,nargs='+',
             help='path to the ROOT event file(s) generated by Delphes.', default =[])
     ap.add_argument('-o', '--outputFile', required=False,
-            help='path to output file storing the DataFrame with the recasting data. '
+            help='path to output file storing the DataFrame with the recasting data.'
                  + 'If not defined, will use the name of the first input file', 
             default = None)
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
@@ -208,10 +267,6 @@ if __name__ == "__main__":
         sys.exit()
 
 
-    # Set random seed
-    # np.random.seed(22)
-    np.random.seed(15)
-
     t0 = time.time()
 
     # # Set output file
@@ -227,7 +282,7 @@ if __name__ == "__main__":
             cutFlow[key] = [val]
 
         if outputFile is None:
-            outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')
+            outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_cutflow.pcl')
         else:
             outFile = outputFile[:]
 

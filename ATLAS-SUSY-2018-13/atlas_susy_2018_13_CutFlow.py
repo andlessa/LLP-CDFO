@@ -68,7 +68,7 @@ def getcutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
 
     keys = ["Total", "Jet selection", "$R_{xy},z <$ 300 mm", 
             "$R_{DV} > 4$ mm", "$d_0 > 2$ mm", 
-            "$nTracks >= 5$", "mDV > 10 GeV", "final Acc*Eff"]
+            "$nTracks >= 5$", "$mDV > 10$ GeV", "final Acc*Eff"]
     for k in keys:
         cutFlow[k] = np.zeros(2)
     
@@ -128,7 +128,7 @@ def getcutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
 
             llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0)]
             if not llpsSel: continue
-            cutFlow["mDV > 10 GeV"] += (ns,ns**2)
+            cutFlow["$mDV > 10$ GeV"] += (ns,ns**2)
 
             # Event efficiency
             ev_eff = eventEff(jets,llps,sr=sr)
@@ -221,9 +221,11 @@ if __name__ == "__main__":
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
         cutFlow = getcutFlow(fileList,args.model,args.SR,args.nevts,mDict)
+        for key,val in cutFlow.items():
+            cutFlow[key] = [val]
 
         if outputFile is None:
-            outFile = fileList[0].replace('delphes_events.root','atlas_2018_42_cutflow.pcl')
+            outFile = fileList[0].replace('delphes_events.root','atlas_2018_13_cutflow.pcl')
         else:
             outFile = outputFile[:]
 
