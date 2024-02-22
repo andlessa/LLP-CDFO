@@ -76,7 +76,7 @@ def vertexAcc(llp,Rmax=np.inf,zmax=np.inf,Rmin=0.0,d0min=0.0,nmin=0,mDVmin=0):
     return passAcc
     
 
-def getRecastData(inputFiles,model='sbottom',modelDict=None):
+def getRecastData(inputFiles,model='sbottom',modelDict=None,effStrategy='official',mDVcut=10.0):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -150,7 +150,7 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None):
             llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
             # Vertex acceptances:
             v_acc = np.array([vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,
-                                        d0min=2.0,nmin=5,mDVmin=10.0)  for llp in llps])
+                                        d0min=2.0,nmin=5,mDVmin=mDVcut)  for llp in llps])
             good_llps = np.array(llps)[v_acc > 0.0]
             if len(good_llps) == 0:
                 continue
@@ -160,7 +160,7 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None):
             ns = ns*evt_eff
             
             # Vertex efficiencies:
-            v_eff = np.array([vertexEff(llp) for llp in llps])
+            v_eff = np.array([vertexEff(llp,strategy=effStrategy) for llp in llps])
             
             wvertex = 1.0-np.prod(1.0-v_acc*v_eff)
 
@@ -199,6 +199,8 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None):
     dataDict['$N_s$ Err'] = [cutFlowErr["DV selection"][0]]
     dataDict['AccEff'] = [cutFlow["DV selection"][1]]
     dataDict['AccEffErr'] = [cutFlowErr["DV selection"][1]]
+    dataDict['VertexEff Strategy'] = [effStrategy]
+    dataDict['mDV cut'] = [mDVcut]
     for cut,val in cutFlow.items():
         dataDict.setdefault(cut,[val])
         dataDict.setdefault(cut+' Error',[cutFlowErr[cut]])
@@ -228,6 +230,11 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
+    ap.add_argument('-S', '--effstrategy', required=False,type=str,default='official',
+            help='Defines which strategy to use for the applying the vertex efficiencies (official, nearest, average).')
+    ap.add_argument('-mDV', '--mDVcut', required=False,type=float,default=10.0,
+            help='Value for the mDV cut.')
+
 
     ap.add_argument('-v', '--verbose', default='info',
             help='verbose level (debug, info, warning or error). Default is info')
@@ -255,16 +262,26 @@ if __name__ == "__main__":
     inputFiles = args.inputFile
     outputFile = args.outputFile
 
+    if args.effstrategy not in  ['official','average','nearest']:
+        print("Select a valid vertex efficiency strategy")
+        sys.exit()
+
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        dataDict = getRecastData(fileList,args.model,mDict)
+        dataDict = getRecastData(fileList,args.model,mDict,
+                                 effStrategy=args.effstrategy,mDVcut=args.mDVcut)
         if args.verbose == 'debug':
             for k,v in dataDict.items():
                 print(k,v)
 
         if outputFile is None:
-            outFile = fileList[0].replace('delphes_events.root','atlas_2016_08.pcl')
+            if args.effstrategy == 'official':
+                outFile = fileList[0].replace('delphes_events.root','atlas_2016_08.pcl')
+            elif args.effstrategy == 'average':
+                outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_average.pcl')
+            elif args.effstrategy == 'nearest':
+                outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_nearest.pcl')
         else:
             outFile = outputFile[:]
 

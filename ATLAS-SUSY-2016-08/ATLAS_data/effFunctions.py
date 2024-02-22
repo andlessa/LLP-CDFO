@@ -60,12 +60,21 @@ for (Rmin,Rmax),f in files.items():
     pts = np.genfromtxt(fname,names=True,
                         comments='#',delimiter=',',skip_header=10)
 
+    averageEff = np.average(pts['Vertex_selection_efficiency'])
     eff_F = LinearNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'],fill_value=0.0)
     eff_F_ext = NearestNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'])
-    functions_vertex_eff[(Rmin,Rmax)] =  {'bounds' : eff_F, 'extrapolate' : eff_F_ext}
+    eff_F_avg = lambda x,y: averageEff
+    functions_vertex_eff[(Rmin,Rmax)] =  {'bounds' : eff_F, 'extrapolate' : eff_F_ext, 'average' : eff_F_avg}
 
 
-def vertexEff(llp,extrapolate=False):
+def vertexEff(llp,strategy='official'):
+    """
+    Returns the vertex reconstruaction and selection efficiency for the LLP. 
+    Several strategies are possible:
+    1. official = linear interpolate the official ATLAS efficiencies (no extrapolation)
+    2. nearest = same as 1., but extrapolate outside the range using the nearest efficiency
+    3. average = constant efficiency (computed as the average over the ATLAS signal region)
+    """
     
     r = np.sqrt(llp.Xd**2 + llp.Yd**2)
     mDV = llp.mDV
@@ -75,9 +84,14 @@ def vertexEff(llp,extrapolate=False):
     eff_F = [f for Rint,f in functions_vertex_eff.items() if Rint[0] < r <= Rint[1]]
     if not eff_F:
         return 0.0
-    else:
-        eff_F = eff_F[0]
+    
+    eff_F = eff_F[0]
+    if strategy == 'official':
         eff = eff_F['bounds'](mDV,n)
-        if (not eff) and extrapolate:
+    elif strategy == 'average':
+        eff = eff_F['average'](mDV,n)
+    elif strategy == 'nearest':
+        eff = eff_F['bounds'](mDV,n)        
+        if (not eff):
             eff = eff_F['extrapolate'](mDV,n)
     return eff

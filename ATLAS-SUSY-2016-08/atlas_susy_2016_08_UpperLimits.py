@@ -12,7 +12,7 @@ def computeULs(inputFile,outputFile):
 
     # First compute ULs for each individual SR
     # ATLAS limits:
-    atlasUL = {'S95_obs' : 3.0, 'S95_exp' : 3.0}
+    atlasUL = {'S95_obs' : 3.0, 'S95_exp' : 3.0} # Limits are the same for mDV > 5 GeV, nTracks >=5 (see getUL.ipynb)    
     # Set r-value
     robs = []
     rexp = []
@@ -45,8 +45,6 @@ if __name__ == "__main__":
             The points without any signal will be removed from the output.")
     ap.add_argument('-f', '--inputFile', required=True,
             help='path to the pickle file containing the Pandas DataFrame with the recasting results for the models')
-    ap.add_argument('-k', '--kfactor', required=False,default=1.0,type=float,
-            help='constant k-factor for all points')    
     ap.add_argument('-o', '--outputFile', required=False,
             help='path to output file. If not defined the upper limits will be stored in the input file.',
             default = None)
@@ -63,7 +61,7 @@ if __name__ == "__main__":
     if outputFile is None:
         outputFile = inputFile
 
-    computeULs(inputFile,outputFile,args.kfactor)
+    computeULs(inputFile,outputFile)
     
     
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))
