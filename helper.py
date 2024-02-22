@@ -53,7 +53,7 @@ class LLP(object):
         pNorm = np.linalg.norm(pTot)
         for d in self.directDaughters:                
             pTot -= np.array([d.E,d.Px,d.Py,d.Pz])
-        if np.linalg.norm(pTot)/pNorm > maxMomViolation/1e3: # Be more strict about direct daughters
+        if self.directDaughters and np.linalg.norm(pTot)/pNorm > maxMomViolation/1e3: # Be more strict about direct daughters
             # raise ValueError("Error getting direct daughters, momentum conservation violated by %1.1e!" %(np.linalg.norm(pTot)/pNorm))
             print("Error getting direct daughters, momentum conservation violated by %1.1e!" %(np.linalg.norm(pTot)/pNorm))
       
@@ -61,7 +61,7 @@ class LLP(object):
         pNorm = np.linalg.norm(pTot)
         for d in self.finalDaughters:                
             pTot -= np.array([d.E,d.Px,d.Py,d.Pz])
-        if np.linalg.norm(pTot)/pNorm > maxMomViolation:
+        if self.finalDaughters and np.linalg.norm(pTot)/pNorm > maxMomViolation:
             # raise ValueError("Error getting final daughters, momentum conservation violated by %1.1e! (%s)" %(np.linalg.norm(pTot)/pNorm,str(pTot)))
             print("Error getting final daughters, momentum conservation violated by %1.1e! (%s)" %(np.linalg.norm(pTot)/pNorm,str(pTot)))
         

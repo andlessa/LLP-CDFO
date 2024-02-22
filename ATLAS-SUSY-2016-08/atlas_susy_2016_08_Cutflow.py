@@ -26,7 +26,7 @@ ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,model='sbottom',modelDict=None):
+def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',mDVcut=10.0):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -57,7 +57,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None):
     keys = ["Total", "$MET > 200$ GeV", "Jet Selection", 
             "$R_{xy},z <$ 300 mm", "$R_{DV} > 4$ mm",
             "$d_0 > 2$ mm", "$nTracks >= 5$",
-            "$mDV > 10$ GeV",  "+Evt Eff", "+DV Eff"]
+            "$mDV > %1.0f$ GeV" %mDVcut,  "+Evt Eff", "+DV Eff"]
     cutFlow = { k : np.zeros(2) for k in keys}
     
     
@@ -126,16 +126,16 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None):
             if not llpsSel: continue
             cutFlow["$nTracks >= 5$"] += (ns,ns**2)
 
-            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0)]
+            llpsSel = [llp for llp in llps if vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=mDVcut)]
             if not llpsSel: continue
-            cutFlow["$mDV > 10$ GeV"] += (ns,ns**2)
+            cutFlow["$mDV > %1.0f$ GeV" %mDVcut] += (ns,ns**2)
            
             # Event efficiency
             evt_eff = eventEff(met,llpsSel)
             # Vertex acceptances:
-            v_acc = np.array([vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=10.0) for llp in llps])
+            v_acc = np.array([vertexAcc(llp,Rmax=300.0,zmax=300.0,Rmin=4.0,d0min=2.0,nmin=5,mDVmin=mDVcut) for llp in llps])
             # Vertex efficiencies:
-            v_eff = np.array([vertexEff(llp) for llp in llps])
+            v_eff = np.array([vertexEff(llp,strategy=effStrategy) for llp in llps])
 
             ns = ns*evt_eff
 
@@ -194,6 +194,10 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
+    ap.add_argument('-S', '--effstrategy', required=False,type=str,default='official',
+            help='Defines which strategy to use for the applying the vertex efficiencies (official, nearest, average).')
+    ap.add_argument('-mDV', '--mDVcut', required=False,type=float,default=10.0,
+            help='Value for the mDV cut.')
 
 
     # First make sure the correct env variables have been set:
@@ -218,11 +222,16 @@ if __name__ == "__main__":
     args = ap.parse_args()
     inputFiles = args.inputFile
     outputFile = args.outputFile
+
+    if args.effstrategy not in  ['official','average','nearest']:
+        print("Select a valid vertex efficiency strategy")
+        sys.exit()
     
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        cutFlow = getCutFlow(fileList,args.model,mDict)
+        cutFlow = getCutFlow(fileList,args.model,mDict,
+                             effStrategy=args.effstrategy,mDVcut=args.mDVcut)
         for key,val in cutFlow.items():
             cutFlow[key] = [val]
 
@@ -230,6 +239,16 @@ if __name__ == "__main__":
             outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')
         else:
             outFile = outputFile[:]
+
+        if outputFile is None:
+            if args.effstrategy == 'official':
+                outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')
+            elif args.effstrategy == 'average':
+                outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow_average.pcl')
+            elif args.effstrategy == 'nearest':
+                outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow_nearest.pcl')
+        else:
+            outFile = outputFile[:]            
 
         if os.path.splitext(outFile)[1] != '.pcl':
             outFile = os.path.splitext(outFile)[0] + '.pcl'

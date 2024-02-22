@@ -7,7 +7,7 @@ import glob
 import time
 import sys
 sys.path.append('../')
-from helper import getModelDict,splitModels
+from helper import getModelDict,splitModels,getDisplacedJets,getLLPs
 import progressbar as P
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -61,7 +61,7 @@ def passVetoPtMiss2018(met):
     return False
 
 # ### Define dictionary to store data
-def getRecastData(inputFiles,pTcut=150.0,model='sbottom',modelDict=None):
+def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -130,7 +130,8 @@ def getRecastData(inputFiles,pTcut=150.0,model='sbottom',modelDict=None):
                     'Photonveto' : 0.0,
                     '$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad' : 0.0,
                     'LeadingAK4jet$p_{T}>100$GeV' : 0.0, 
-                    'LeadingAK4jet$\eta<2.4$' : 0.0,            
+                    'LeadingAK4jet$\eta<2.4$' : 0.0,    
+                    'DisplacedJet veto (R < %1.1f)' %maxJetR : 0.0,
                     'HCALmitigation(jets)' : 0.0,
                     'HCALmitigation($\phi^{miss}$)' : 0.0}
                 for ds in luminosities}
@@ -217,11 +218,6 @@ def getRecastData(inputFiles,pTcut=150.0,model='sbottom',modelDict=None):
             else:
                 deltaPhi = 0.0
             
-            # Apply cut on DM pT to reproduce CMS
-            # cut on event generation:
-            dmMET = tree.DMMissingET.At(0).MET
-            if dmMET < pTcut:
-                continue
 
             # Split event into datasets:
             lumRnd = np.random.uniform(0.,lumTot)
@@ -269,6 +265,17 @@ def getRecastData(inputFiles,pTcut=150.0,model='sbottom',modelDict=None):
             cutFlow['LeadingAK4jet$p_{T}>100$GeV'] += ns
             if abs(jetList[0].Eta) > etamax: continue
             cutFlow['LeadingAK4jet$\eta<2.4$'] += ns
+
+            if maxJetR > 0.0:
+                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,[])
+                jetsDisp = getDisplacedJets(jetList,llps)
+                maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
+                if maxR > maxJetR:
+                    continue
+            
+            cutFlow['DisplacedJet veto (R < %1.1f)' %maxJetR] += ns
+                
+
             if useDataSet == 2018 and not passVetoJets2018(jetList):
                 continue
             cutFlow['HCALmitigation(jets)'] += ns
@@ -357,9 +364,10 @@ if __name__ == "__main__":
             help='Gen level MET cut for computing partial cross-sections.')
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
+    ap.add_argument('-rmax', '--maxJetR', required=False,type=float,default=-1.0,
+            help='Maximum RDV displacement for jets matched to a LLP. If negative, it will be ignored.')
 
     
-
     ap.add_argument('-v', '--verbose', default='info',
             help='verbose level (debug, info, warning or error). Default is info')
 
@@ -386,13 +394,16 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        dataDict = getRecastData(fileList,args.pTcut,args.model,mDict)
+        dataDict = getRecastData(fileList,args.maxJetR,args.model,mDict)
         if args.verbose == 'debug':
             for k,v in dataDict.items():
                 print(k,v)
 
         if outputFile is None:
-            outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004.pcl')
+            if args.maxJetR < 0.0:
+                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004.pcl')
+            else:
+                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_maxR_%1.0f.pcl' %args.maxJetR)
         else:
             outFile = outputFile[:]
 
