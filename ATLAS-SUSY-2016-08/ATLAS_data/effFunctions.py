@@ -21,7 +21,7 @@ for (Rmin,Rmax),f in files.items():
                      bounds_error=False,
                       kind='linear')
     
-    functions_event_eff[(Rmin,Rmax)] = {'bounds' : eff_F, 'extrapolate' : eff_F_ext}
+    functions_event_eff[(Rmin,Rmax)] = {'official' : eff_F, 'extrapolate' : eff_F_ext}
 
 
 def eventEff(met,llps,extrapolate=True):
@@ -35,7 +35,7 @@ def eventEff(met,llps,extrapolate=True):
     if not eff_F:
         return 0.0
     elif not extrapolate:
-        eff_F = eff_F[0]['bounds']
+        eff_F = eff_F[0]['official']
     else:
         eff_F = eff_F[0]['extrapolate']
     
@@ -60,11 +60,10 @@ for (Rmin,Rmax),f in files.items():
     pts = np.genfromtxt(fname,names=True,
                         comments='#',delimiter=',',skip_header=10)
 
-    averageEff = np.average(pts['Vertex_selection_efficiency'])
+    averageEff = np.average(pts[pts['Vertex_selection_efficiency'] >0.0]['Vertex_selection_efficiency'])
     eff_F = LinearNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'],fill_value=0.0)
     eff_F_ext = NearestNDInterpolator((pts['m_Truth_vertex_GeV'],pts['Number_of_tracks_Truth_vertex']),pts['Vertex_selection_efficiency'])
-    eff_F_avg = lambda x,y: averageEff
-    functions_vertex_eff[(Rmin,Rmax)] =  {'bounds' : eff_F, 'extrapolate' : eff_F_ext, 'average' : eff_F_avg}
+    functions_vertex_eff[(Rmin,Rmax)] =  {'official' : eff_F, 'nearest' : eff_F_ext, 'average' : averageEff}
 
 
 def vertexEff(llp,strategy='official'):
@@ -87,11 +86,11 @@ def vertexEff(llp,strategy='official'):
     
     eff_F = eff_F[0]
     if strategy == 'official':
-        eff = eff_F['bounds'](mDV,n)
+        eff = eff_F['official'](mDV,n)
     elif strategy == 'average':
-        eff = eff_F['average'](mDV,n)
+        eff = eff_F['average']
     elif strategy == 'nearest':
-        eff = eff_F['bounds'](mDV,n)        
+        eff = eff_F['official'](mDV,n)        
         if (not eff):
-            eff = eff_F['extrapolate'](mDV,n)
+            eff = eff_F['nearest'](mDV,n)
     return eff
