@@ -131,7 +131,7 @@ def getRecastData(inputFiles,model='strong',modelDict=None):
             totalweightPB += weightPB
             ns = weightPB*1e3*lumi # number of signal events
 
-            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters,maxMomViolation=6e-2)
             jets = getJets(tree.GenJet,pTmin=25.,etaMax=5.0)
             jetsDisp = getDisplacedJets(jets,llps)
             
@@ -148,6 +148,9 @@ def getRecastData(inputFiles,model='strong',modelDict=None):
 
             cutFlowHighPT["Jet selection"] += (ns*highPT_acc,(ns*highPT_acc)**2)
             cutFlowTrackless["Jet selection"] += (ns*trackless_acc,(ns*trackless_acc)**2)
+
+            if len(llps) == 0:
+                continue
             
             # Event efficiency
             highPT_eff = eventEff(jets,llps,sr='HighPT')
