@@ -79,7 +79,7 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
 
     lumi =  59.7
     totalweightPB = 0.0
-    keys = ['Total','Triggeremulation','$MET > 250$ GeV', 'Electronveto','Muonveto', 'Tauveto', 'Bjetveto', 'Photonveto','$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad','LeadingAK4jet$p_{T}>100$GeV', 'LeadingAK4jet$\eta<2.4$', 'DisplacedJet veto (R < %1.1f)' %maxJetR, 'HCALmitigation(jets)','HCALmitigation($\phi^{miss}$)']
+    keys = ['Total','Triggeremulation','$MET > 250$ GeV', 'Electronveto','Muonveto', 'Tauveto', 'Bjetveto', 'Photonveto','$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad','LeadingAK4jet$p_{T}>100$GeV', 'LeadingAK4jet$\eta<2.4$', 'DisplacedJet veto ($R < %1.1f$)' %maxJetR, 'HCALmitigation(jets)','HCALmitigation($\phi^{miss}$)']
     cutFlow = { k : np.zeros(2) for k in keys}
 
 
@@ -207,7 +207,7 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
                 if maxR > maxJetR:
                     continue
             
-            cutFlow['DisplacedJet veto (R < %1.1f)' %maxJetR] += (ns,ns**2)
+            cutFlow['DisplacedJet veto ($R < %1.1f$)' %maxJetR] += (ns,ns**2)
 
 
             if not passVetoJets2018(jetList):
