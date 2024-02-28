@@ -176,7 +176,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
             print('%s : %1.3e +- ??' %(k,v))
 
 
-    return cutFlow
+    return cutFlow,cutFlowErr
 
 
 if __name__ == "__main__":
@@ -230,10 +230,10 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        cutFlow = getCutFlow(fileList,args.model,mDict,
+        cutFlow,cutFlowErr = getCutFlow(fileList,args.model,mDict,
                              effStrategy=args.effstrategy,mDVcut=args.mDVcut)
         for key,val in cutFlow.items():
-            cutFlow[key] = [val]
+            cutFlow[key] = [(val,cutFlowErr[key])]
 
         if outputFile is None:
             outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')

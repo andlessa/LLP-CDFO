@@ -222,6 +222,6 @@ def splitModels(inputFiles,model='sbottom'):
     # Now group together files with the same model
     # Get list of unique dictionaries
     for mDict in uniqueModels:        
-        fileList = [f for f in fileModels if fileModels[f] == mDict]
+        fileList = sorted([f for f in fileModels if fileModels[f] == mDict])
         print('\t Model: %s (%i files)' %(mDict,len(fileList)))
         yield (fileList,mDict)
