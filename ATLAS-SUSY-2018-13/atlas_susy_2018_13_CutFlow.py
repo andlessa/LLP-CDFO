@@ -24,7 +24,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getcutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None):
+def getCutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -170,7 +170,7 @@ def getcutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
         else:
             print('%s : %1.3e +- ??' %(k,v))
 
-    return cutFlow,cutFlowErr
+    return modelDict,cutFlow,cutFlowErr
 
 
 if __name__ == "__main__":
@@ -220,9 +220,11 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        cutFlow,cutFlowErr = getcutFlow(fileList,args.model,args.SR,args.nevts,mDict)
+        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.model,modelDict=mDict,
+                             sr=args.SR)
+        dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
-            cutFlow[key] = [(val,cutFlowErr[key])]
+            dataDict[key] = [(val,cutFlowErr[key])]
 
         if outputFile is None:
             outFile = fileList[0].replace('delphes_events.root','atlas_2018_13_cutflow.pcl')
@@ -233,7 +235,7 @@ if __name__ == "__main__":
             outFile = os.path.splitext(outFile)[0] + '.pcl'
 
         # #### Create pandas DataFrame
-        df = pd.DataFrame.from_dict(cutFlow)
+        df = pd.DataFrame.from_dict(dataDict)
 
         # ### Save DataFrame to pickle file
         print('Saving to',outFile)

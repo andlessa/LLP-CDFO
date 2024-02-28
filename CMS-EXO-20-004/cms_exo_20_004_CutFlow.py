@@ -246,7 +246,7 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
         else:
             print('%s : %1.3e +- ??' %(k,v))
 
-    return cutFlow
+    return modelDict,cutFlow,cutFlowErr
 
 
 if __name__ == "__main__":
@@ -290,9 +290,10 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        cutFlow = getCutFlow(fileList,args.maxJetR,args.model,mDict)
+        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.maxJetR,args.model,mDict)
+        dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
-            cutFlow[key] = [val]
+            dataDict[key] = [(val,cutFlowErr[key])]
 
         if outputFile is None:
             if args.maxJetR < 0.0:
@@ -306,7 +307,7 @@ if __name__ == "__main__":
             outFile = os.path.splitext(outFile)[0] + '.pcl'
 
         # #### Create pandas DataFrame
-        df = pd.DataFrame.from_dict(cutFlow)
+        df = pd.DataFrame.from_dict(dataDict)
 
         # ### Save DataFrame to pickle file
         print('Saving to',outFile)

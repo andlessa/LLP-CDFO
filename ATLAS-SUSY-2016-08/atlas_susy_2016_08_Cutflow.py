@@ -176,7 +176,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
             print('%s : %1.3e +- ??' %(k,v))
 
 
-    return cutFlow,cutFlowErr
+    return modelDict,cutFlow,cutFlowErr
 
 
 if __name__ == "__main__":
@@ -229,11 +229,12 @@ if __name__ == "__main__":
     
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
-    for fileList,mDict in splitModels(inputFiles,args.model):
-        cutFlow,cutFlowErr = getCutFlow(fileList,args.model,mDict,
+    for fileList,mDict in splitModels(inputFiles,args.model):        
+        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.model,mDict,
                              effStrategy=args.effstrategy,mDVcut=args.mDVcut)
+        dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
-            cutFlow[key] = [(val,cutFlowErr[key])]
+            dataDict[key] = [(val,cutFlowErr[key])]
 
         if outputFile is None:
             outFile = fileList[0].replace('delphes_events.root','atlas_2016_08_cutflow.pcl')
@@ -254,7 +255,7 @@ if __name__ == "__main__":
             outFile = os.path.splitext(outFile)[0] + '.pcl'
 
         # #### Create pandas DataFrame
-        df = pd.DataFrame.from_dict(cutFlow)
+        df = pd.DataFrame.from_dict(dataDict)
 
         # ### Save DataFrame to pickle file
         print('Saving to',outFile)
