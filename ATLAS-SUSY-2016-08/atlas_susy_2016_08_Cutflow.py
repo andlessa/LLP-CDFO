@@ -74,6 +74,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
         norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        # norm = 1.0
 
         for ievt in range(nevts):    
             

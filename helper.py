@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 import os,glob
 import pyslha
-
+import re
 
 class LLP(object):
     """
@@ -218,10 +218,11 @@ def splitModels(inputFiles,model='sbottom'):
             uniqueModels.append(mDict)
     uniqueModels = sorted(uniqueModels, key= lambda d: list(d.values()))
 
-    print('Splitting %i files into %i models' %(len(inputFiles),len(uniqueModels)))
+    print('Splitting %i files into %i models\n\n\n' %(len(inputFiles),len(uniqueModels)))
     # Now group together files with the same model
     # Get list of unique dictionaries
     for mDict in uniqueModels:        
-        fileList = sorted([f for f in fileModels if fileModels[f] == mDict])
-        print('\t Model: %s (%i files)' %(mDict,len(fileList)))
+        fileList = [f for f in fileModels if fileModels[f] == mDict]
+        # Sort files by modified time, so older comes first
+        fileList.sort(key=os.path.getmtime)
         yield (fileList,mDict)

@@ -249,7 +249,9 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
-
+    ap.add_argument('-U', '--update', required=False,action='store_true',
+            help='If the flag is set only the model points containing data newer than the dataframe will be read.')
+    
     ap.add_argument('-v', '--verbose', default='info',
             help='verbose level (debug, info, warning or error). Default is info')
 
@@ -276,10 +278,6 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        dataDict = getRecastData(fileList,args.model,mDict)
-        if args.verbose == 'debug':
-            for k,v in dataDict.items():
-                print(k,v)
 
         if outputFile is None:
             outFile = fileList[0].replace('delphes_events.root','atlas_2018_13.pcl')
@@ -289,11 +287,33 @@ if __name__ == "__main__":
         if os.path.splitext(outFile)[1] != '.pcl':
             outFile = os.path.splitext(outFile)[0] + '.pcl'
 
+        skipModel = False
+        if args.update and os.path.isfile(outFile):
+            outFile_date = dt.fromtimestamp(os.path.getctime(outFile))
+            inputFiles_date = max([dt.fromtimestamp(os.path.getctime(f)) for f in fileList])
+            if inputFiles_date <= outFile_date:
+                skipModel = True
+        if skipModel:
+            print('\nSkipping',mDict,'\n')
+            # print('files=',fileList)
+            # sys.exit()
+            continue
+
+        print('----------------------------------')
+        print('\t Model: %s (%i files)' %(mDict,len(fileList)))
+
+        dataDict = getRecastData(fileList,args.model,mDict)
+        if args.verbose == 'debug':
+            for k,v in dataDict.items():
+                print(k,v)
+
+        
+
         # #### Create pandas DataFrame
         df = pd.DataFrame.from_dict(dataDict)
         # ### Save DataFrame to pickle file
         print('Saving to',outFile)
         df.to_pickle(outFile)
-        print('\n\n')
+        print('\n')
 
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))

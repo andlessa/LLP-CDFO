@@ -42,5 +42,5 @@ define vl = ve vm vt
 define vl~ = ve~ vm~ vt~
 import model MSSM_SLHA2
 define sq = ul cl t1 ur cr t2 dl sl dr sr b2 ul~ cl~ t1~ ur~ cr~ t2~ dl~ sl~ dr~ sr~ b2~ go
-generate p p > b1 b1~ / sq
-output ../../pp2BB
+generate p p > b1 b1~ j / sq
+output ../../pp2BB1j

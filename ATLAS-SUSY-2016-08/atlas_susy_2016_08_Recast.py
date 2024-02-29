@@ -234,6 +234,8 @@ if __name__ == "__main__":
             help='Defines which strategy to use for the applying the vertex efficiencies (official, nearest, average).')
     ap.add_argument('-mDV', '--mDVcut', required=False,type=float,default=10.0,
             help='Value for the mDV cut.')
+    ap.add_argument('-U', '--update', required=False,action='store_true',
+            help='If the flag is set only the model points containing data newer than the dataframe will be read.')
 
 
     ap.add_argument('-v', '--verbose', default='info',
@@ -243,6 +245,7 @@ if __name__ == "__main__":
     # First make sure the correct env variables have been set:
     import subprocess
     import sys
+    from datetime import datetime as dt
     LDPATH = subprocess.check_output('echo $LD_LIBRARY_PATH',shell=True,text=True)
     ROOTINC = subprocess.check_output('echo $ROOT_INCLUDE_PATH',shell=True,text=True)
     pythiaDir = os.path.abspath('../MG5/HEPTools/pythia8/lib')
@@ -266,15 +269,14 @@ if __name__ == "__main__":
         print("Select a valid vertex efficiency strategy")
         sys.exit()
 
+    if args.update:
+        print('\n\n======= Updating files with new event data ==========\n')
+
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        dataDict = getRecastData(fileList,args.model,mDict,
-                                 effStrategy=args.effstrategy,mDVcut=args.mDVcut)
-        if args.verbose == 'debug':
-            for k,v in dataDict.items():
-                print(k,v)
 
+        # Set output file
         if outputFile is None:
             if args.effstrategy == 'official':
                 outFile = fileList[0].replace('delphes_events.root','atlas_2016_08.pcl')
@@ -288,11 +290,33 @@ if __name__ == "__main__":
         if os.path.splitext(outFile)[1] != '.pcl':
             outFile = os.path.splitext(outFile)[0] + '.pcl'
 
+        skipModel = False
+        if args.update and os.path.isfile(outFile):
+            outFile_date = dt.fromtimestamp(os.path.getctime(outFile))
+            inputFiles_date = max([dt.fromtimestamp(os.path.getctime(f)) for f in fileList])
+            if inputFiles_date <= outFile_date:
+                skipModel = True
+        if skipModel:
+            print('\nSkipping',mDict,'\n')
+            # print('files=',fileList)
+            # sys.exit()
+            continue
+
+        print('----------------------------------')
+        print('\t Model: %s (%i files)' %(mDict,len(fileList)))
+
+        dataDict = getRecastData(fileList,args.model,mDict,
+                                 effStrategy=args.effstrategy,mDVcut=args.mDVcut)
+        if args.verbose == 'debug':
+            for k,v in dataDict.items():
+                print(k,v)
+        
+
         # #### Create pandas DataFrame
         df = pd.DataFrame.from_dict(dataDict)
         # ### Save DataFrame to pickle file
         print('Saving to',outFile)
         df.to_pickle(outFile)
-        print('\n\n')
+        print('\n')
 
     print("\n\nDone in %3.2f min" %((time.time()-t0)/60.))
