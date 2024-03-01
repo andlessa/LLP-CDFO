@@ -85,17 +85,21 @@ def computeULs(inputFile,outputFile,deltas=0.0):
                     nsignal=ns,deltas_rel=deltas)    
         try:
             ul = ulComp.getUpperLimitOnMu(data)
+            recastData.loc[dfModel.index,'robs'] = 1./ul
         except:
             print('Error computing ul for model:\n',m,'\n')
             ul = None
+            recastData.loc[dfModel.index,'robs'] = 0.0
         try:
-            ulExp = ulComp.getUpperLimitOnMu(dataExp)    
+            ulExp = ulComp.getUpperLimitOnMu(dataExp)
+            recastData.loc[dfModel.index,'rexp'] = 1./ulExp 
         except:
             print('Error computing ulExp for model:\n',m,'\n')
             ulExp = None
+            recastData.loc[dfModel.index,'rexp'] = 0.0
         
-        recastData.loc[dfModel.index,'robs'] = 1./ul
-        recastData.loc[dfModel.index,'rexp'] = 1./ulExp
+        
+        
 
     progressbar.finish()
     recastData.to_pickle(outputFile)
