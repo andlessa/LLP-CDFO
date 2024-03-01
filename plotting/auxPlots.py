@@ -21,7 +21,7 @@ def interpolateData(x,y,z,nx=200,ny=200,method='linear',fill_value=np.nan,xnew=N
 
     return xnew,ynew,znew
 
-def getContours(x,y,z,contourValues):
+def getContours(x,y,z,contourValues,npathmax=1):
     
 
     contours = plt.contour(x, y, z, contourValues)
@@ -33,7 +33,9 @@ def getContours(x,y,z,contourValues):
         cV = contourValues[i]
         xData = []
         yData = []
-        for p in item.get_paths():
+        for ipath,p in enumerate(item.get_paths()):
+            if ipath >= npathmax:
+                continue
             v = p.vertices
             xData += list(v[:, 0])
             yData += list(v[:, 1])
@@ -114,25 +116,3 @@ def label_line(fig,line, label_text,
                 put_label(i)
     else:
         raise ValueError("Need one of near_i, near_x, near_y")
-    
-def closeContour(contourPts,allPts):
-    """
-    Use all the points defined in allPts and used to obtain the contour curve
-    to close the contour curve on above. Useful for filling the contour region
-    """
-
-    xy = np.array(contourPts)
-    allPoints = np.array(allPts)
-    if xy[0,0] != xy[-1,0]:
-        rangePts = allPoints[(allPoints[:,0] <= max(xy[0,0],xy[-1,0])) & (allPoints[:,0] >= min(xy[0,0],xy[-1,0]))]
-    maxPts = []
-    for pt in np.unique(rangePts[:,0]):
-        selPts = rangePts[rangePts[:,0] == pt]
-        maxPts.append([pt,max(selPts[:,1])])
-    if xy[0,0] < xy[-1,0]:
-        maxPts = sorted(maxPts,reverse=True)
-    else:
-        maxPts = sorted(maxPts)
-    xyExt = np.append(xy,maxPts,axis=0)
-
-    return xyExt
