@@ -121,7 +121,7 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,effStrategy='officia
         # Assume multiple files correspond to equivalent samplings
         # of the same distributions
         norm =nevtsDict[inputFile]/modelDict['Total MC Events']
-        # norm = 1.0
+        norm = 1.0
 
         for ievt in range(nevts):    
             
