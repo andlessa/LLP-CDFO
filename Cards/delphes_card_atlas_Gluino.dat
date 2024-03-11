@@ -37,10 +37,10 @@ set ExecutionPath {
   MuonIsolation
 
   LLPFilter
-  RHadronFilter
-  RHadronIsolation
+  LLPIsolation
   DMFilter
   DMMissingET
+  MissingET
   MissingETCalo
 
   NeutrinoFilter
@@ -279,7 +279,6 @@ module SimpleCalorimeter ECal {
   add EnergyFraction {16} {0.0}
   add EnergyFraction {1000022} {0.0}
   add EnergyFraction {1000021} {0.0}
-  add EnergyFraction {1000021} {0.0}  
   add EnergyFraction {1000039} {0.0}  
   add EnergyFraction {1000023} {0.0}
   add EnergyFraction {1000025} {0.0}
@@ -375,7 +374,6 @@ module SimpleCalorimeter HCal {
   add EnergyFraction {16} {0.0}
   add EnergyFraction {1000022} {0.0}
   add EnergyFraction {1000021} {0.0}
-  add EnergyFraction {1000021} {0.0}  
   add EnergyFraction {1000039} {0.0}  
   add EnergyFraction {1000023} {0.0}
   add EnergyFraction {1000025} {0.0}
@@ -589,6 +587,15 @@ module Merger MissingET {
   set MomentumOutputArray momentum    
 }
 
+###################
+# Missing ET from calorimenter (no muons or LLPs)
+###################
+
+module Merger MissingETCalo {
+  add InputArray Calorimeter/towers
+  set MomentumOutputArray momentum    
+}
+
 ##################
 # Scalar HT merger
 ##################
@@ -612,6 +619,7 @@ module BSMFilter LLPFilter {
 
   set InputArray Delphes/allParticles
   set OutputArray bsmParticles
+  set MothersArray mothers
   set FinalDaughtersArray finalDaughters  
   set DirectDaughtersArray directDaughters  
   set PTMin 0.0
@@ -628,51 +636,31 @@ module BSMFilter LLPFilter {
 #  add StatusCode {102} 
 #  add StatusCode {-102}  
   
-  # Select sbottoms
+  # Select gluinos
   add PdgCode {1000021}
   add PdgCode {-1000021}
 }
 
 
-#####################
-# R-hadron Filter
-#####################
-
-module BSMFilter RHadronFilter {
-
-  set InputArray Delphes/allParticles
-  set OutputArray rHadrons
-  set FinalDaughtersArray rhadronFinalDaughters  
-  set DirectDaughtersArray rhadronDaughters  
-  set PTMin 0.0
-  set massMin 50.0
-
-  # Pythia StatusCode = 104: an R-hadron  
-  add StatusCode {104} 
-  add StatusCode {-104}    
-
-}
-
 ################
-# R-hadron isolation
+# LLP isolation
 ################
 
-module Isolation RHadronIsolation {
-  set CandidateInputArray RHadronFilter/rHadrons
+module Isolation LLPIsolation {
+  set CandidateInputArray LLPFilter/bsmParticles
   set IsolationInputArray TrackMerger/tracks
-
-  set OutputArray isoRhadrons
+  set OutputArray isoLLPs
 
   set DeltaRMax 0.3
 
   set PTMin 1.0
 
-  set PTRatioMax 1000.0
+  # Set a very high value to avoid cutting on it
+  set PTRatioMax 100000.0
   
   set UsePTSum false
     
 }
-
 
 
 #####################
@@ -782,14 +770,7 @@ module Merger DMMissingET {
   set MomentumOutputArray momentum
 }
 
-###################
-# Missing ET from calorimenter (no muons or LLPs)
-###################
 
-module Merger MissingETCalo {
-  add InputArray Calorimeter/towers
-  set MomentumOutputArray momentum    
-}
 
 ########################
 # Jet Flavor Association
@@ -894,16 +875,15 @@ module TreeWriter TreeWriter {
 #  add Branch Delphes/stableParticles StableParticle GenParticle
   add Branch LLPFilter/finalDaughters bsmFinalDaughters GenParticle
   add Branch LLPFilter/directDaughters bsmDirectDaughters GenParticle
-  add Branch LLPFilter/bsmParticles bsm GenParticle
-  add Branch RHadronFilter/rHadrons rhadron GenParticle
-  add Branch RHadronFilter/rhadronDaughters rhadronDaughters GenParticle
-  add Branch RHadronIsolation/isoRhadrons isoRhadrons GenParticle
+  add Branch LLPFilter/mothers bsmMothers GenParticle  
+  add Branch LLPIsolation/isoLLPs bsm GenParticle
   add Branch DMFilter/dmParticles dmParticles GenParticle
-  add Branch DMMissingET/momentum DMMissingET MissingET  
+  add Branch DMMissingET/momentum DMMissingET MissingET    
 
   add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET
   add Branch MissingETCalo/momentum MissingETCalo MissingET
+  add Branch MissingET/momentum MissingET MissingET  
 
 }
 

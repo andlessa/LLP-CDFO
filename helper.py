@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from typing import Any
+from typing import Any,Union
 import numpy as np
 import os
 import glob
 import pyslha
+from particleChargesPythia import particleCharges,colorCharges
 
 class LLP(object):
     """
@@ -12,11 +13,12 @@ class LLP(object):
     other useful methods
     """
 
-    def __init__(self, candidate, direcdaughters, finaldaughters,
+    def __init__(self, candidate, direcdaughters, finaldaughters, mothers=[],
                  maxMomViolation=5e-2,trackEff = 1.0) -> None:
         self._candidate = candidate
         self.directDaughters = direcdaughters[:]
         self.finalDaughters = finaldaughters[:]
+        self.mothers = mothers[:]
         self._selectedDecays = []
         self.nTracks = None
         self.mDV = None
@@ -28,8 +30,6 @@ class LLP(object):
         trimom = np.sqrt(self.Px**2 +self.Py**2 + self.Pz**2)
         self.beta = trimom/self.E
         self.gbeta = trimom/self.Mass
-
-
 
         for d in self.finalDaughters:
             if d.Charge == 0:
@@ -90,7 +90,6 @@ class LLP(object):
                 print("Error getting final daughters, momentum conservation violated by %1.1e! (%s)" %(np.linalg.norm(pTot)/pNorm,str(pTot)))
             
 
-
     def __getattr__(self, attr: str) -> Any:
         try:
             return self.__getattribute__(attr)
@@ -105,13 +104,39 @@ class LLP(object):
     
     def __repr__(self) -> str:
         return str(self)
+    
+    def getCharge(self) -> float:
+        """
+        Try to get the LLP charge using its PDG code.
+        If it is a colored particle, check the charge of its mother (R-hadron).
+        """
 
+        pdg = abs(self.PID)
+        if pdg not in particleCharges:
+            return None
+        if pdg not in colorCharges:
+            return None
+        
+        # If LLP is color neutral returns its charge
+        if colorCharges[pdg] == 0:
+            return particleCharges[pdg]/3.0
 
-def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=5e-2,trackEff=1.0):
+        # Loop over mothers until a color neutral state is found
+        for mom in self.mothers:
+            pdg = abs(mom.PID)
+            if pdg not in particleCharges:
+                continue
+            if pdg not in colorCharges:
+                continue
+            if colorCharges[pdg] == 0:
+                return particleCharges[pdg]/3.0
+
+        return None        
+
+def getLLPs(llpList,directDaughters,finalDaughters,mothers=[],maxMomViolation=5e-2,trackEff=1.0):
 
     llps = []
-    for ip in range(llpList.GetEntries()):
-        p = llpList.At(ip)        
+    for ip,p in enumerate(llpList):
         # Get direct daughters
         llp_ddaughters = []        
         for d in directDaughters:
@@ -122,12 +147,12 @@ def getLLPs(llpList,directDaughters,finalDaughters,maxMomViolation=5e-2,trackEff
         for d in finalDaughters:
             if d.M1 == ip:
                 llp_fdaughters.append(d)
-        
+        # Get mothers
+        llp_mothers = list(mothers)[p.M1:p.M2+1]        
         # Get final daughters
-        llps.append(LLP(p,llp_ddaughters,llp_fdaughters,maxMomViolation,trackEff))
+        llps.append(LLP(p,llp_ddaughters,llp_fdaughters,llp_mothers,maxMomViolation,trackEff))
         
     return llps
-
 
 def getJets(jets,pTmin=50.0,etaMax=5.0):
     """
@@ -144,7 +169,6 @@ def getJets(jets,pTmin=50.0,etaMax=5.0):
         jetsSel.append(jet)
     
     return jetsSel
-
 
 def getDisplacedJets(jets,llps,skipPIDs=[1000022]):
     """

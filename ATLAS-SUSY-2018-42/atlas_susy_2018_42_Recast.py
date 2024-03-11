@@ -26,28 +26,14 @@ ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
 
-def getHSCPCandidates(rhadrons,rhadronDaughters,llps):
+def getHSCPCandidates(llps):
 
-    candidates = []    
-    for ip in range(rhadrons.GetEntries()):
-        rhadron = rhadrons.At(ip)
-        if abs(rhadron.Charge) != 1: # Skip neutral or multicharged particles
+    candidates = []
+    # Check if llps have charge = 1:
+    for llp in llps:
+        if abs(llp.getCharge()) != 1.0:
             continue
-        
-        # Map rhadron to llp (parton)
-        # (check which llp came from the R-hadron)
-        hscpCandidate = None
-        for jp in range(rhadronDaughters.GetEntries()):
-            d = rhadronDaughters.At(jp)
-            if d.M1 != ip:
-                continue # Daughter does not belong to current rhadron
-            for llp in llps:
-                if d is llp._candidate:
-                    hscpCandidate = llp
-                    break
-            if hscpCandidate is not None:
-                break
-        candidates.append(hscpCandidate)
+        candidates.append(llp)
 
     return candidates
 
@@ -199,8 +185,9 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,normalize=True):
             ns = weightPB*1e3*lumi # number of signal events
 
             metCalo = tree.MissingETCalo.At(0).MET
-            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
-            hscpCandidates = getHSCPCandidates(tree.isoRhadrons,tree.rhadronDaughters,llps)
+            # Include the LLP mothers in case it is needed to recover its charge from its R-hadron parent:
+            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters,tree.bsmMothers)
+            hscpCandidates = getHSCPCandidates(llps)
 
             muonsLLP = applyMuonTagging(hscpCandidates)
             hscps = [hscp for hscp in hscpCandidates if hscp not in muonsLLP]

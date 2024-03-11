@@ -6,7 +6,10 @@ import pandas as pd
 import glob
 import time
 import progressbar as P
+import sys
+sys.path.append('../')
 from helper import getLLPs,getModelDict,splitModels
+from atlas_susy_2018_42_Recast import getHSCPCandidates,applyHSCPSelection,applyIsolation,applyMuonTagging,removeFromMET,applyMTCut
 from ATLAS_data.effFunctions import (getMuonRecoEff,getTriggerEff,getTrackEff,
                                      getSelectionEff,getTargetMass,getMassSelEff,
                                      massLong,massShort)
@@ -23,108 +26,6 @@ ROOT.gSystem.Load(os.path.join(delphesDir,"libDelphes.so"))
 ROOT.gInterpreter.Declare('#include "classes/SortableObject.h"')
 ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
-
-
-def getHSCPCandidates(rhadrons,rhadronDaughters,llps):
-
-    candidates = []    
-    for ip in range(rhadrons.GetEntries()):
-        rhadron = rhadrons.At(ip)
-        if abs(rhadron.Charge) != 1: # Skip neutral or multicharged particles
-            continue
-        
-        # Map rhadron to llp (parton)
-        # (check which llp came from the R-hadron)
-        hscpCandidate = None
-        for jp in range(rhadronDaughters.GetEntries()):
-            d = rhadronDaughters.At(jp)
-            if d.M1 != ip:
-                continue # Daughter does not belong to current rhadron
-            for llp in llps:
-                if d is llp._candidate:
-                    hscpCandidate = llp
-                    break
-            if hscpCandidate is not None:
-                break
-        candidates.append(hscpCandidate)
-
-    return candidates
-
-def applyHSCPSelection(hscpList,pT=50.,eta=2.4,r=500.):
-
-    selHSCPs = []
-    for hscp in hscpList:
-        if hscp.PT < pT: continue 
-        if abs(hscp.Eta) > eta: continue
-        if hscp.r_decay < r: continue
-        selHSCPs.append(hscp)
-    
-    return selHSCPs
-
-def applyIsolation(hscpList,pTmax=5.0):
-
-    isoHSCPs = []
-    # Apply isolation requirement for HSCP tracks
-    for hscp in hscpList:
-        sumPT = hscp.SumPtCharged
-        if sumPT > pTmax: continue
-        isoHSCPs.append(hscp)
-    return isoHSCPs
-
-def applyMuonTagging(hscpList):
-
-    """
-    Computes the probability of reconstructing the hscp as a muon.
-    :param hscpList: List of GenParticle objects
-    """
-
-    muonsLLP = []
-    for hscp in hscpList:
-        if hscp.r_decay < 3.9e3 and hscp.z_decay < 6e3: # Skip decays before MS
-            continue
-        
-        beta = hscp.beta
-        eta = abs(hscp.Eta)
-        eff = getMuonRecoEff(beta,eta,hscp.PID)
-        # Randomly reconstrunct the HSCP as a muon
-        if np.random.uniform() < eff:
-            continue
-        muonsLLP.append(hscp)
-    
-    return muonsLLP
-def removeFromMET(particles,METobj):
-    """
-    Removes the contribution from the particles in the list
-    to the total MET.
-    """
-
-    metx = METobj.MET*np.cos(METobj.Phi)
-    mety = METobj.MET*np.sin(METobj.Phi)
-
-    if particles:
-        # Remove particles from MET:            
-        pxTot = sum([p.Px for p in particles])
-        pyTot = sum([p.Py for p in particles])        
-        metx = (metx-pxTot)
-        mety = (mety-pyTot)
-    
-    return [metx,mety]
-
-def applyMTCut(hscps,METvector):
-    """
-    Remove tracks which have mT < 130 GeV
-    """
-
-    selHSCPs = []
-    met = np.sqrt(METvector[0]**2 + METvector[1]**2)    
-    for hscp in hscps:
-        pThscp = [hscp.Px,hscp.Py]
-        cosdphi = np.dot(pThscp,METvector)/(hscp.PT*met)
-        mT = np.sqrt(2*hscp.PT*met*(1-cosdphi))
-        if mT < 130.: continue
-        selHSCPs.append(hscp)
-    
-    return selHSCPs
 
 # ### Define dictionary to store data
 def getCutFlow(inputFiles,model='sbottom',modelDict=None,normalize=True):
@@ -198,8 +99,8 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,normalize=True):
             ns = weightPB*1e3*lumi # number of signal events
 
             metCalo = tree.MissingETCalo.At(0).MET
-            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
-            hscpCandidates = getHSCPCandidates(tree.isoRhadrons,tree.rhadronDaughters,llps)
+            llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters,tree.bsmMothers)
+            hscpCandidates = getHSCPCandidates(llps)
 
             cutFlow["Total"] += (ns,ns**2)
 
