@@ -6,3 +6,5 @@ DelphesLLP
 MG5
 eventData
 matchingTests/pp2BB*
+plotting/*png
+plotting/*/*png
