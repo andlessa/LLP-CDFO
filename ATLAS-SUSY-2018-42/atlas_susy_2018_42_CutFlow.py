@@ -40,6 +40,11 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,normalize=True):
     if not modelDict:
         modelDict = {}
 
+    useRhadronEff = False
+    if model in ['sbottom','gluino']:
+        useRhadronEff = True # If the model is for a colored LLP, use R-hadron efficiencies
+        print('Using R-hadron effs')
+    
     # Select mass windows accoding to lifetime
     # (use long lifetime by default)
     if 'width' not in modelDict or (modelDict['width'] > 0 and (6.582e-25/modelDict['width']) < 1e-9):
@@ -108,7 +113,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,normalize=True):
             if hscpsFilter:
                 cutFlow['(Acceptance)'] += (ns,ns**2)
 
-            muonsLLP = applyMuonTagging(hscpCandidates)
+            muonsLLP = applyMuonTagging(hscpCandidates,useRhadronEff)
             hscps = [hscp for hscp in hscpCandidates if hscp not in muonsLLP]
             newMETv = removeFromMET(muonsLLP,tree.MissingET.At(0))
             newMET = np.sqrt(newMETv[0]**2+newMETv[1]**2)
@@ -195,7 +200,7 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-n', '--normalize', required=False,action='store_true',
             help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
-    ap.add_argument('-m', '--model', required=False,type=str,default='wino',
+    ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (stau,wino,gluino).')
 
 

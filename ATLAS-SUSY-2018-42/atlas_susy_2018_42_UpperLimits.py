@@ -29,7 +29,7 @@ if __name__ == "__main__":
     
     import argparse    
     ap = argparse.ArgumentParser(description=
-            "Compute the upper limit on mu for ATLAS-SUSY-2018042 for the recast data stored in the input file. \
+            "Compute the upper limit on mu for ATLAS-SUSY-2018-42 for the recast data stored in the input file. \
             The points without any signal will be removed from the output.")
     ap.add_argument('-f', '--inputFile', required=True,
             help='path to the pickle file containing the Pandas DataFrame with the recasting results for the models')

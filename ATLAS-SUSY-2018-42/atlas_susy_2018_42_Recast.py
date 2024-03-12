@@ -58,7 +58,7 @@ def applyIsolation(hscpList,pTmax=5.0):
         isoHSCPs.append(hscp)
     return isoHSCPs
 
-def applyMuonTagging(hscpList):
+def applyMuonTagging(hscpList,useRhadronEff):
 
     """
     Computes the probability of reconstructing the hscp as a muon.
@@ -72,13 +72,14 @@ def applyMuonTagging(hscpList):
         
         beta = hscp.beta
         eta = abs(hscp.Eta)
-        eff = getMuonRecoEff(beta,eta,hscp.PID)
+        eff = getMuonRecoEff(beta,eta,useRhadronEff)
         # Randomly reconstrunct the HSCP as a muon
         if np.random.uniform() < eff:
             continue
         muonsLLP.append(hscp)
     
     return muonsLLP
+
 def removeFromMET(particles,METobj):
     """
     Removes the contribution from the particles in the list
@@ -125,6 +126,11 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,normalize=True):
         modelDict = getModelDict(inputFiles[0],model)
     if not modelDict:
         modelDict = {}
+
+    useRhadronEff = False
+    if model in ['sbottom','gluino']:
+        useRhadronEff = True # If the model is for a colored LLP, use R-hadron efficiencies
+
 
     # Select mass windows accoding to lifetime
     # (use long lifetime by default)
@@ -189,7 +195,7 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,normalize=True):
             llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters,tree.bsmMothers)
             hscpCandidates = getHSCPCandidates(llps)
 
-            muonsLLP = applyMuonTagging(hscpCandidates)
+            muonsLLP = applyMuonTagging(hscpCandidates,useRhadronEff)
             hscps = [hscp for hscp in hscpCandidates if hscp not in muonsLLP]
             newMETv = removeFromMET(muonsLLP,tree.MissingET.At(0))
             newMET = np.sqrt(newMETv[0]**2+newMETv[1]**2)
@@ -314,7 +320,7 @@ if __name__ == "__main__":
             default = None)
     ap.add_argument('-n', '--normalize', required=False,action='store_true',
             help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')
-    ap.add_argument('-m', '--model', required=False,type=str,default='wino',
+    ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (stau,wino,gluino).')
     ap.add_argument('-U', '--update', required=False,action='store_true',
             help='If the flag is set only the model points containing data newer than the dataframe will be read.')

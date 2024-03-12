@@ -19,11 +19,11 @@ def combineRecastData(files,outputFile):
 
         
     allColumns = allData.columns.tolist()
-    orderColumns = ['mLLP','width','tau_ns','Regime','Target Mass [GeV]', 'SR'] 
+    orderColumns = ['mLLP','mLSP','tau_ns'] 
     orderColumns += [c for c in allColumns if not c in orderColumns]
     allData = allData[orderColumns]
-    allData.sort_values(['mLLP','width','tau_ns','Regime','Target Mass [GeV]', 'SR'],inplace=True,
-                ascending=[True,False,True,True,True,True],ignore_index=True)        
+    allData.sort_values(['mLLP','mLSP','tau_ns'],inplace=True,
+                ascending=[True,True,True],ignore_index=True)        
 
     allData.to_pickle(outputFile)
 
