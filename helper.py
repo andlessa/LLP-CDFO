@@ -31,18 +31,13 @@ class LLP(object):
         self.beta = trimom/self.E
         self.gbeta = trimom/self.Mass
 
-        if abs(candidate.Status) == 102: # Stable LLP pre-hadronization -> use R-hadron
-            if len(direcdaughters) != 1:
-                print('Error obtaining LLP (Status = %i with %i daughters)' 
-                      %(candidate.Status,len(direcdaughters)))
-                return
-            # if len(finaldaughters) != 1:
-                # print('Error obtaining LLP (Status = %i with %i final daughters)' 
-                    #   %(candidate.Status,len(finaldaughters)))
-                # return
-            # Use daughter (R-Hadron as stable LLP)
-            newCandidate = direcdaughters[0]
-            self._candidate = newCandidate
+        if candidate.Status == 102: # LLP has not decayed (use final R-Hadron as stable LLP)
+            # Get final R-hadron:
+            finalRHadrons = [d for d in finaldaughters if d.Mass >= candidate.Mass]
+            if len(finalRHadrons) != 1:
+                print("Error getting stable R-Hadron")                
+            # Use final daughter as stable LLP
+            self._candidate = finalRHadrons[0]
             self.directDaughters = []
             self.finalDaughters = []
             self.mothers = [candidate]
