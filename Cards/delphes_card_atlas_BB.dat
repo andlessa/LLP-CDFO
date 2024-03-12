@@ -2,7 +2,7 @@
 # Order of execution of various modules
 #######################################
 
-#set MaxEvents 1000
+#set MaxEvents 10
 
 set ExecutionPath {
  ParticlePropagator
@@ -37,7 +37,8 @@ set ExecutionPath {
   MuonIsolation
 
   LLPFilter
-  LLPIsolation
+  RHadronFilter
+  RHadronIsolation
   DMFilter
   DMMissingET
   MissingET
@@ -631,8 +632,8 @@ module BSMFilter LLPFilter {
   # Pythia StatusCode = 102:
   # partons rearranged from the long-lived particle end to prepare for fragmentation from this end
   # (only needed if the LLP does not decay)
-  add StatusCode {106} 
-  add StatusCode {-106}  
+#  add StatusCode {106} 
+#  add StatusCode {-106}  
 #  add StatusCode {102} 
 #  add StatusCode {-102}  
   
@@ -641,15 +642,34 @@ module BSMFilter LLPFilter {
   add PdgCode {-1000005}
 }
 
+#####################
+# RHadron Filter
+#####################
+
+module BSMFilter RHadronFilter {
+
+  set InputArray Delphes/allParticles
+  set OutputArray Rhadrons
+  set MothersArray Rmothers
+  set FinalDaughtersArray RfinalDaughters  
+  set DirectDaughtersArray RdirectDaughters  
+  set PTMin 0.0
+  set massMin 50.0
+
+  # Pythia StatusCode = 104: an R-hadron
+  add StatusCode {104} 
+  add StatusCode {-104}  
+}
+
 
 ################
-# LLP isolation
+# RHadron isolation
 ################
 
-module Isolation LLPIsolation {
-  set CandidateInputArray LLPFilter/bsmParticles
+module Isolation RHadronIsolation {
+  set CandidateInputArray RHadronFilter/Rhadrons
   set IsolationInputArray TrackMerger/tracks
-  set OutputArray isoLLPs
+  set OutputArray isoRHadrons
 
   set DeltaRMax 0.3
 
@@ -876,7 +896,10 @@ module TreeWriter TreeWriter {
   add Branch LLPFilter/finalDaughters bsmFinalDaughters GenParticle
   add Branch LLPFilter/directDaughters bsmDirectDaughters GenParticle
   add Branch LLPFilter/mothers bsmMothers GenParticle  
-  add Branch LLPIsolation/isoLLPs bsm GenParticle
+  add Branch LLPFilter/bsmParticles bsm GenParticle
+  add Branch RHadronFilter/Rhadrons rhadrons GenParticle
+  add Branch RHadronFilter/RdirectDaughters rhadronDaughters GenParticle          
+  add Branch RHadronIsolation/isoRHadrons isorhadrons GenParticle
   add Branch DMFilter/dmParticles dmParticles GenParticle
   add Branch DMMissingET/momentum DMMissingET MissingET    
 

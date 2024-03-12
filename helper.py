@@ -31,10 +31,26 @@ class LLP(object):
         self.beta = trimom/self.E
         self.gbeta = trimom/self.Mass
 
+        if abs(candidate.Status) == 102: # Stable LLP pre-hadronization -> use R-hadron
+            if len(direcdaughters) != 1:
+                print('Error obtaining LLP (Status = %i with %i daughters)' 
+                      %(candidate.Status,len(direcdaughters)))
+                return
+            # if len(finaldaughters) != 1:
+                # print('Error obtaining LLP (Status = %i with %i final daughters)' 
+                    #   %(candidate.Status,len(finaldaughters)))
+                # return
+            # Use daughter (R-Hadron as stable LLP)
+            newCandidate = direcdaughters[0]
+            self._candidate = newCandidate
+            self.directDaughters = []
+            self.finalDaughters = []
+            self.mothers = [candidate]
+
         for d in self.finalDaughters:
-            if d.Charge == 0:
-                continue
             if d.Status != 1:
+                continue
+            if d.Charge == 0:
                 continue
             if d.PT < 1.0:
                 continue
@@ -113,8 +129,10 @@ class LLP(object):
 
         pdg = abs(self.PID)
         if pdg not in particleCharges:
+            print('PDG %i not found in ParticleData' %pdg)
             return None
         if pdg not in colorCharges:
+            print('PDG %i not found in ParticleData' %pdg)
             return None
         
         # If LLP is color neutral returns its charge
@@ -131,6 +149,7 @@ class LLP(object):
             if colorCharges[pdg] == 0:
                 return particleCharges[pdg]/3.0
 
+        print('Error getting charge for %i' %pdg)
         return None        
 
 def getLLPs(llpList,directDaughters,finalDaughters,mothers=[],maxMomViolation=5e-2,trackEff=1.0):
