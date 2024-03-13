@@ -35,7 +35,7 @@ class LLP(object):
             # Get final R-hadron:
             finalRHadrons = [d for d in finaldaughters if d.Mass >= candidate.Mass]
             if len(finalRHadrons) != 1:
-                print("Error getting stable R-Hadron")                
+                print("Error getting stable R-Hadron (%i)" %len(finalRHadrons))                
             # Use final daughter as stable LLP
             self._candidate = finalRHadrons[0]
             self.directDaughters = []

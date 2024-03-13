@@ -48,16 +48,6 @@ def applyHSCPSelection(hscpList,pT=50.,eta=2.4,r=500.):
     
     return selHSCPs
 
-def applyIsolation(hscpList,pTmax=5.0):
-
-    isoHSCPs = []
-    # Apply isolation requirement for HSCP tracks
-    for hscp in hscpList:
-        sumPT = hscp.SumPtCharged
-        if sumPT > pTmax: continue
-        isoHSCPs.append(hscp)
-    return isoHSCPs
-
 def applyMuonTagging(hscpList,useRhadronEff):
 
     """
@@ -97,22 +87,6 @@ def removeFromMET(particles,METobj):
         mety = (mety-pyTot)
     
     return [metx,mety]
-
-def applyMTCut(hscps,METvector):
-    """
-    Remove tracks which have mT < 130 GeV
-    """
-
-    selHSCPs = []
-    met = np.sqrt(METvector[0]**2 + METvector[1]**2)    
-    for hscp in hscps:
-        pThscp = [hscp.Px,hscp.Py]
-        cosdphi = np.dot(pThscp,METvector)/(hscp.PT*met)
-        mT = np.sqrt(2*hscp.PT*met*(1-cosdphi))
-        if mT < 130.: continue
-        selHSCPs.append(hscp)
-    
-    return selHSCPs
 
 # ### Define dictionary to store data
 def getRecastData(inputFiles,model='sbottom',modelDict=None,normalize=True):
@@ -209,21 +183,12 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,normalize=True):
             if not ns: continue
 
             # Apply selection to HSCP candidates (following ATLAS snippet)
-            hscps = applyHSCPSelection(hscps,pT=50.,eta=3.0,r=500.0)
-            if not hscps: continue
-            # hscps = applyIsolation(hscps,tree.Track) # Already included in trackEff
-            if not hscps: continue
-            hscps = applyHSCPSelection(hscps,pT=120.)
-            if not hscps: continue
-            if not hscps: continue
-            hscps = applyHSCPSelection(hscps,pT=120.,eta=1.8)
-            if not hscps: continue
-            # hscps = applyMTCut(hscps,newMETv) # Already included in trackEff
+            hscps = applyHSCPSelection(hscps,pT=120.,eta=1.8,r=500.0)
             if not hscps: continue
 
             gbetas = [h.gbeta for h in hscps]
-            trackEffHigh = getTrackEff(gbetas,sr='High')
-            trackEffLow =  getTrackEff(gbetas,sr='Low')
+            trackEffHigh = np.array([getTrackEff(gb,sr='High') for gb in gbetas])
+            trackEffLow =  np.array([getTrackEff(gb,sr='Low') for gb in gbetas])
 
             # Assume hscp masses can be approximated
             # by the closest target mass for computing the
