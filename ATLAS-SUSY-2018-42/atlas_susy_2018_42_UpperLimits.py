@@ -16,7 +16,9 @@ def computeULs(inputFile,outputFile):
     recastDF = pd.read_pickle(inputFile)
 
     # Merge data frames based on Target Mass and SR
-    allDF = pd.merge(recastDF,atlasDF,on=['Target Mass [GeV]','SR', 'Regime'])
+    allDF = pd.merge(recastDF,atlasDF,on=['Target Mass [GeV]','SR', 'Regime'],how="outer",
+                     suffixes=(None,"del_me"))
+    allDF.drop(columns=[c for c in allDF.columns if "del_me" in c],inplace=True)
     allDF['$\mu_{obs}$'] = allDF['S95_obs']/allDF['$N_s$']
     allDF['$\mu_{exp}$'] = allDF['S95_exp']/allDF['$N_s$']
 

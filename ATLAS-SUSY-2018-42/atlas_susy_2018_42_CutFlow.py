@@ -9,10 +9,8 @@ import progressbar as P
 import sys
 sys.path.append('../')
 from helper import getLLPs,getModelDict,splitModels
-from atlas_susy_2018_42_Recast import getHSCPCandidates,applyHSCPSelection,applyIsolation,applyMuonTagging,removeFromMET,applyMTCut
-from ATLAS_data.effFunctions import (getMuonRecoEff,getTriggerEff,getTrackEff,
-                                     getSelectionEff,getTargetMass,getMassSelEff,
-                                     massLong,massShort)
+from atlas_susy_2018_42_Recast import getHSCPCandidates,applyHSCPSelection,applyMuonTagging,removeFromMET
+from ATLAS_data.effFunctions import getTriggerEff,getTrackEff,getSelectionEff
 
 delphesDir = os.path.abspath("../DelphesLLP")
 os.environ['ROOT_INCLUDE_PATH'] = os.path.join(delphesDir,"external")
@@ -45,15 +43,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,normalize=True):
         useRhadronEff = True # If the model is for a colored LLP, use R-hadron efficiencies
         print('Using R-hadron effs')
     
-    # Select mass windows accoding to lifetime
-    # (use long lifetime by default)
-    if 'width' not in modelDict or (modelDict['width'] > 0 and (6.582e-25/modelDict['width']) < 1e-9):
-        massWindows = massShort
-    else:
-        massWindows = massLong
-
-    massWindows = massWindows[['Mass_window_Low','Mass_window_High','Target_Mass_GeV']]
-
+ 
     modelDict['Total MC Events'] = 0
 
     nevtsDict = {}
