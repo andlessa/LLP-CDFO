@@ -26,7 +26,7 @@ ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',mDVcut=10.0,normalize=True):
+def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',mDVcut=10.0,addweights=False):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -73,11 +73,11 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        # If normalize = True: 
+        # If addweights = False: 
         # assume multiple files correspond to equivalent samplings
         # of the same distributions
-        # If normalize = False: directly add events
-        if normalize:
+        # If addweights = True: directly add events
+        if not addweights:
             norm =nevtsDict[inputFile]/modelDict['Total MC Events']
         else:
             norm = 1.0
@@ -200,8 +200,8 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data. '
                  + 'If not defined, will use the name of the first input file', 
             default = None)
-    ap.add_argument('-n', '--normalize', required=False,action='store_true',
-            help='If set, the input files will be considered to refer to multiple samples of the same process and their weights will be normalized.')    
+    ap.add_argument('-A', '--add', required=False,action='store_true',default=False,
+            help='If set, the input files will be considered to refer to samples of the orthogonal processes and their weights will be added.')   
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
     ap.add_argument('-S', '--effstrategy', required=False,type=str,default='official',
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     for fileList,mDict in splitModels(inputFiles,args.model):        
         modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.model,mDict,
                              effStrategy=args.effstrategy,mDVcut=args.mDVcut,
-                             normalize=args.normalize)
+                             addweights=args.add)
         dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
             dataDict[key] = [(val,cutFlowErr[key])]

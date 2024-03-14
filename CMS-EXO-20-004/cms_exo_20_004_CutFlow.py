@@ -25,7 +25,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
+def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights=False):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -93,7 +93,14 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        # If addweights = Fakse: 
+        # assume multiple files correspond to equivalent samplings
+        # of the same distributions
+        # If addweights = True: directly add events
+        if not addweights:
+            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        else:
+            norm = 1.0
 
         for ievt in range(nevts):    
             
@@ -262,6 +269,8 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data.'
                  + 'If not defined, will use the name of the first input file', 
             default = None)
+    ap.add_argument('-A', '--add', required=False,action='store_true',default=False,
+            help='If set, the input files will be considered to refer to samples of the orthogonal processes and their weights will be added.')    
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
     ap.add_argument('-rmax', '--maxJetR', required=False,type=float,default=-1.0,
@@ -290,7 +299,7 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.maxJetR,args.model,mDict)
+        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.maxJetR,args.model,mDict,addweights=args.add)
         dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
             dataDict[key] = [(val,cutFlowErr[key])]

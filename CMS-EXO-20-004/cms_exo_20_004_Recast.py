@@ -3,7 +3,6 @@
 import os
 import numpy as np
 import pandas as pd
-import glob
 import time
 import sys
 sys.path.append('../')
@@ -61,7 +60,7 @@ def passVetoPtMiss2018(met):
     return False
 
 # ### Define dictionary to store data
-def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
+def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights=False):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -147,7 +146,14 @@ def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None):
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        # If addweights = Fakse: 
+        # assume multiple files correspond to equivalent samplings
+        # of the same distributions
+        # If addweights = True: directly add events
+        if not addweights:
+            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        else:
+            norm = 1.0
 
         for ievt in range(nevts):    
             
@@ -360,6 +366,8 @@ if __name__ == "__main__":
             help='path to output file storing the DataFrame with the recasting data.'
                  + 'If not defined, will use the name of the first input file', 
             default = None)
+    ap.add_argument('-A', '--add', required=False,action='store_true',default=False,
+            help='If set, the input files will be considered to refer to samples of the orthogonal processes and their weights will be added.')    
     ap.add_argument('-pt', '--pTcut', required=False,default=0.0,type=float,
             help='Gen level MET cut for computing partial cross-sections.')
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
@@ -376,6 +384,7 @@ if __name__ == "__main__":
     # First make sure the correct env variables have been set:
     import subprocess
     import sys
+    from datetime import datetime as dt
     LDPATH = subprocess.check_output('echo $LD_LIBRARY_PATH',shell=True,text=True)
     ROOTINC = subprocess.check_output('echo $ROOT_INCLUDE_PATH',shell=True,text=True)
     pythiaDir = os.path.abspath('../MG5/HEPTools/pythia8/lib')
@@ -423,7 +432,7 @@ if __name__ == "__main__":
         print('----------------------------------')
         print('\t Model: %s (%i files)' %(mDict,len(fileList)))
 
-        dataDict = getRecastData(fileList,args.maxJetR,args.model,mDict)
+        dataDict = getRecastData(fileList,args.maxJetR,args.model,mDict,addweights=args.add)
         if args.verbose == 'debug':
             for k,v in dataDict.items():
                 print(k,v)
