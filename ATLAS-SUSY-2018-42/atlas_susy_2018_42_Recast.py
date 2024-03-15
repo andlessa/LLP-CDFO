@@ -193,7 +193,7 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,addweights=False):
             # Assume hscp masses can be approximated
             # by the closest target mass for computing the
             # mass window efficiency:
-            masses = [getTargetMass(hscp.Mass) for hscp in hscps]
+            masses = [getTargetMass(hscp.Mass,modelDict['width']) for hscp in hscps]
             if all(m is None for m in masses):
                 continue            
             # masses = [hscp.Mass for hscp in hscps] # Use target mass or real HSCP mass?
