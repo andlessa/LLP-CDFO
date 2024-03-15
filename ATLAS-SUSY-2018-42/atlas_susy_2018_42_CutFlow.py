@@ -60,7 +60,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
     lumi = 139.0
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    keys = ["Total","Trigger","$E_{T}^{miss}>170$ GeV","$p_{T} > 50$ GeV","Track isolation","$p_{T} > 120$ GeV","$|\eta|<1.8$","$m_{T}({track},{p}_{{T}}^{{ miss}}) > 130$ GeV","(Acceptance)","(SR-Low - no mass Window)","(SR-High - no mass Window)"]
+    keys = ["Total","$n_{Charged} > 0$","Trigger","Event Sel.",'$R_{xy} > 500$ mm',"$p_{T} > 120$ GeV","$|\eta|<1.8$","(Acceptance)","(SR-Low - no mass Window)","(SR-High - no mass Window)"]
     cutFlow = {k  : np.zeros(2) for k in keys}    
 
 
@@ -99,6 +99,10 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
 
             cutFlow["Total"] += (ns,ns**2)
 
+            if not hscpCandidates:
+                continue
+            cutFlow["$n_{Charged} > 0$"] += (ns,ns**2)
+
             hscpsFilter = applyHSCPSelection(hscpCandidates,pT=120.,eta=1.8,r=500.0)
             if hscpsFilter:
                 cutFlow['(Acceptance)'] += (ns,ns**2)
@@ -116,25 +120,28 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
             eventEff = getSelectionEff(newMET)
             ns = ns*eventEff
             if not ns: continue
-            cutFlow["$E_{T}^{miss}>170$ GeV"] += (ns,ns**2)
+            cutFlow["Event Sel."] += (ns,ns**2)
 
             # Apply selection to HSCP candidates (following ATLAS snippet)
-            hscps = applyHSCPSelection(hscps,pT=50.,eta=3.0,r=500.0)
-            if not hscps: continue
-            cutFlow['$p_{T} > 50$ GeV'] += (ns,ns**2)        
+            # hscps = applyHSCPSelection(hscps,pT=50.,eta=3.0,r=500.0)
+            # if not hscps: continue
+            # cutFlow['$p_{T} > 50$ GeV'] += (ns,ns**2)        
             # hscps = applyIsolation(hscps,tree.Track) # Already included in trackEff
+            # if not hscps: continue
+            # cutFlow['Track isolation'] += (ns,ns**2)     
+            hscps = applyHSCPSelection(hscps,pT=0.,eta=5.0,r=500.0)
             if not hscps: continue
-            cutFlow['Track isolation'] += (ns,ns**2)     
-            hscps = applyHSCPSelection(hscps,pT=120.)
+            cutFlow['$R_{xy} > 500$ mm'] += (ns,ns**2)  
+            hscps = applyHSCPSelection(hscps,pT=120.,eta=5.0,r=500.0)
             if not hscps: continue
             cutFlow['$p_{T} > 120$ GeV'] += (ns,ns**2)  
             if not hscps: continue
-            hscps = applyHSCPSelection(hscps,pT=120.,eta=1.8)
+            hscps = applyHSCPSelection(hscps,pT=120.,eta=1.8,r=500.0)
             if not hscps: continue
             cutFlow['$|\eta|<1.8$'] += (ns,ns**2)
             # hscps = applyMTCut(hscps,newMETv) # Already included in trackEff
-            if not hscps: continue
-            cutFlow['$m_{T}({track},{p}_{{T}}^{{ miss}}) > 130$ GeV'] += (ns,ns**2)
+            # if not hscps: continue
+            # cutFlow['$m_{T}({track},{p}_{{T}}^{{ miss}}) > 130$ GeV'] += (ns,ns**2)
 
             gbetas = [h.gbeta for h in hscps]
             trackEffHigh = getTrackEff(gbetas,sr='High')
