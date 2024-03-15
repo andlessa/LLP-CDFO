@@ -9,7 +9,7 @@ import progressbar as P
 import sys
 sys.path.append('../')
 from helper import getLLPs,getModelDict,splitModels
-from atlas_susy_2018_42_Recast import getHSCPCandidates,applyHSCPSelection,applyMuonTagging,removeFromMET
+from atlas_susy_2018_42_Recast import getHSCPCandidates,applyHSCPSelection,applyMuonTagging,removeFromMET,getMassSelEff
 from ATLAS_data.effFunctions import getTriggerEff,getTrackEff,getSelectionEff
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -60,7 +60,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
     lumi = 139.0
     totalweightPB = 0.0
     # Keep track of yields for each dataset
-    keys = ["Total","$n_{Charged} > 0$","Trigger","Event Sel.",'$R_{xy} > 500$ mm',"$p_{T} > 120$ GeV","$|\eta|<1.8$","(Acceptance)","(SR-Low - no mass Window)","(SR-High - no mass Window)"]
+    keys = ["Total","$n_{Charged} > 0$","$n_{Charged} > 0$ (+mu tag)","Trigger","Event Sel.",'$R_{xy} > 500$ mm',"$p_{T} > 120$ GeV","$|\eta|<1.8$","(Acceptance)","(SR-Low - no mass Window)","(SR-High - no mass Window)","(SR-Low)","(SR-High)"]
     cutFlow = {k  : np.zeros(2) for k in keys}    
 
 
@@ -109,6 +109,9 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
 
             muonsLLP = applyMuonTagging(hscpCandidates,useRhadronEff)
             hscps = [hscp for hscp in hscpCandidates if hscp not in muonsLLP]
+            if not hscps:
+                continue
+            cutFlow["$n_{Charged} > 0$ (+mu tag)"] += (ns,ns**2)
             newMETv = removeFromMET(muonsLLP,tree.MissingET.At(0))
             newMET = np.sqrt(newMETv[0]**2+newMETv[1]**2)
             triggerEff = getTriggerEff(metCalo)
@@ -151,16 +154,31 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
             cutFlow['(SR-High - no mass Window)'] += (nsHigh,nsHigh**2)
             cutFlow['(SR-Low - no mass Window)'] += (nsLow,nsLow**2)
             
+            masses = [h.Mass for h in hscps]
+            wmassSRHigh = getMassSelEff(masses,sr='High')
+            wmassSRLow = getMassSelEff(masses,sr='Low')
+
+            nsHigh = ns*(1-np.prod(1.0-trackEffHigh*wmassSRHigh))            
+            nsLow = ns*(1-np.prod(1.0-trackEffLow*wmassSRLow))
+            
+            cutFlow['(SR-High)'] += (nsHigh,nsHigh**2)
+            cutFlow['(SR-Low)'] += (nsLow,nsLow**2)
+
         f.Close()
     progressbar.finish()
 
     modelDict['Total xsec (pb)'] = totalweightPB
-    print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
+    # print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
     cutFlowErr = {k : np.sqrt(v[1]) for k,v in cutFlow.items()}
     cutFlow = {k : v[0]  for k,v in cutFlow.items()}
     
+    print('-'*10)
+    print('Model:')
+    for key,val in modelDict.items():
+        print("%s = %1.5e" %(key,val))
     # Compute normalized cutflow
+    
     print('Cutflow:')
     for key,val in cutFlow.items():
         if key == 'Total':
@@ -172,6 +190,7 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,addweights=False):
     cutFlow['Total'] = 1.0
     cutFlowErr['Total'] = 0.0
 
+    print('-'*10)
     for k,v in cutFlow.items():
         if v != 0.0:
             print('%s : %1.3e +- %1.1f%%' %(k,v,1e2*cutFlowErr[k]/v))

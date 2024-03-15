@@ -235,9 +235,10 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,addweights=False):
     # Create a dictionary for storing data
     dataDict = {'Luminosity (1/fb)' : lumi, 'Regime' : lifetimeRegime}
     # Signal regions
+    # If there was no signal, populate lowest mass window (common to both regimes) with zero events
     if not yields:
         dataDict['SR'] = ['SR-Inclusive_Low', 'SR-Inclusive_High']
-        dataDict['Target Mass [GeV]'] = [0.0,0.0]
+        dataDict['Target Mass [GeV]'] = [200.0,200.0]
         dataDict['$N_s$'] = [0.0,0.0]
         dataDict['$\sigma_{Ns}$'] = [0.0,0.0]
     else:
