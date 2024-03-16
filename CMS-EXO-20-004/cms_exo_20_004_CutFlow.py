@@ -109,10 +109,7 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights
             tree.GetEntry(ievt)        
 
             jets = tree.Jet
-            try:
-                weightPB = tree.Weight.At(1).Weight
-            except:
-                weightPB = tree.Weight.At(0).Weight
+            weightPB = tree.Weight.At(1).Weight
             weightPB = weightPB*norm
             ns = weightPB*1e3*lumi # number of signal events
             totalweightPB += weightPB
@@ -208,7 +205,10 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights
             cutFlow['LeadingAK4jet$\eta<2.4$'] += (ns,ns**2)
 
             if maxJetR > 0.0:
-                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,[])
+                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+                # Remove LLPs decaying outside the detector!
+                if any(llp.r_decay > 1e4 for llp in llps):
+                    continue
                 jetsDisp = getDisplacedJets(jetList,llps)
                 maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
                 if maxR > maxJetR:
@@ -230,12 +230,18 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights
 
     # Store total (combined xsec)
     modelDict['Total xsec (pb)'] = totalweightPB
-    print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
+    # print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
     cutFlowErr = {k : np.sqrt(v[1]) for k,v in cutFlow.items()}
     cutFlow = {k : v[0]  for k,v in cutFlow.items()}
+    
+    print('-'*10)
+    print('Model:')
+    for key,val in modelDict.items():
+        print("%s = %1.5e" %(key,val))
 
     # Compute normalized cutflow
+    print('-'*10)
     print('Cutflow:')
     for key,val in cutFlow.items():
         if key == 'Total':
@@ -288,7 +294,7 @@ if __name__ == "__main__":
         print('Enviroment variables not properly set. Run source setenv.sh first.')
         sys.exit()
 
-
+    np.random.seed(15)
     t0 = time.time()
 
     # # Set output file

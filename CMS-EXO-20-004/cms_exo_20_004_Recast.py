@@ -273,7 +273,10 @@ def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweig
             cutFlow['LeadingAK4jet$\eta<2.4$'] += ns
 
             if maxJetR > 0.0:
-                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,[])
+                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+                # Remove LLPs decaying outside the detector!
+                if any(llp.r_decay > 1e4 for llp in llps):
+                    continue
                 jetsDisp = getDisplacedJets(jetList,llps)
                 maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
                 if maxR > maxJetR:
@@ -393,7 +396,7 @@ if __name__ == "__main__":
         print('Enviroment variables not properly set. Run source setenv.sh first.')
         sys.exit()
 
-
+    np.random.seed(15)
     t0 = time.time()
 
     # # Set output file
