@@ -60,7 +60,8 @@ def passVetoPtMiss2018(met):
     return False
 
 # ### Define dictionary to store data
-def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights=False):
+def getRecastData(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,
+                  model='sbottom',modelDict=None,addweights=False):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -117,25 +118,7 @@ def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweig
     yields = {ds : [] for ds in luminosities}
     metAll = {ds : [] for ds in luminosities}
     totalweightPB = 0.0
-    # Keep track of yields for each dataset
-    cutFlowAll = {ds : 
-                    {'Fullsample' : 0.0,
-                    'Triggeremulation' : 0.0,
-                    '$p_{T}^{miss}>250$GeV' : 0.0, 
-                    'Electronveto' : 0.0,
-                    'Muonveto' : 0.0, 
-                    'Tauveto' : 0.0, 
-                    'Bjetveto' : 0.0, 
-                    'Photonveto' : 0.0,
-                    '$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad' : 0.0,
-                    'LeadingAK4jet$p_{T}>100$GeV' : 0.0, 
-                    'LeadingAK4jet$\eta<2.4$' : 0.0,    
-                    'DisplacedJet veto (R < %1.1f)' %maxJetR : 0.0,
-                    'HCALmitigation(jets)' : 0.0,
-                    'HCALmitigation($\phi^{miss}$)' : 0.0}
-                for ds in luminosities}
-
-
+    
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
     progressbar.maxval = modelDict['Total MC Events']
@@ -234,64 +217,49 @@ def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweig
             else:
                 useDataSet = 2018
 
-            
-            cutFlow = cutFlowAll[useDataSet]
-            cutFlow['Fullsample'] += ns
-
             # Apply cuts:
             ## Apply trigger efficiency
             # ns = ns*triggerEff
             if missingET.MET < 120.0:
                 continue
-            cutFlow['Triggeremulation'] += ns
 
             ## Cut on MET
             if missingET.MET < minMET: continue              
-            cutFlow['$p_{T}^{miss}>250$GeV'] += ns
             ## Veto electrons
             if len(electronList) > nMax_el: continue  
-            cutFlow['Electronveto'] += ns
             ## Veto muons
             if len(muonList) > nMax_mu: continue  
-            cutFlow['Muonveto'] += ns
             ## Veto tau jets
             if len(taujetList) > nMax_tau: continue  
-            cutFlow['Tauveto'] += ns
             ## Veto b jets
             if len(bjetList) > nMax_b: continue  
-            cutFlow['Bjetveto'] += ns
             ## Veto photons
             if len(photonList) > nMax_a: continue  
-            cutFlow['Photonveto'] += ns
             ## Delta Phi cut
             if deltaPhi < 0.5: continue
-            cutFlow['$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad'] += ns
             ## Jet cuts
             if len(jetList) < 1 or jetList[0].PT < pTj1min: continue
-            cutFlow['LeadingAK4jet$p_{T}>100$GeV'] += ns
             if abs(jetList[0].Eta) > etamax: continue
-            cutFlow['LeadingAK4jet$\eta<2.4$'] += ns
 
-            if maxJetR > 0.0:
+            if maxLLPR > 0.0 or maxJetR > 0.0:
                 llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+            
+            if maxLLPR > 0.0 and any(llp.r_decay > maxLLPR for llp in llps):
+                continue
+            
+            if maxJetR > 0.0:                
                 # Remove LLPs decaying outside the detector!
-                if any(llp.r_decay > 1e4 for llp in llps):
-                    continue
                 jetsDisp = getDisplacedJets(jetList,llps)
                 maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
                 if maxR > maxJetR:
                     continue
             
-            cutFlow['DisplacedJet veto (R < %1.1f)' %maxJetR] += ns
-                
 
             if useDataSet == 2018 and not passVetoJets2018(jetList):
-                continue
-            cutFlow['HCALmitigation(jets)'] += ns
+                continue            
             if useDataSet == 2018 and not passVetoPtMiss2018(missingET):
                 continue
-            cutFlow['HCALmitigation($\phi^{miss}$)'] += ns
-
+            
             # Store relevant data        
             yields[useDataSet].append(ns)
             metAll[useDataSet].append(missingET.MET)  
@@ -304,18 +272,7 @@ def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweig
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)
 
-    for cutFlow in cutFlowAll.values():
-        if not cutFlow['Fullsample']:
-            continue
-        # Get total cross-section after pTDM > 150 cut:
-        modelDict['Total xsec-pT150 (pb)'] += cutFlow['Fullsample']/(1e3*lumTot)
-        # Normalize cutFlow by FullSample:
-        for key,val in cutFlow.items():
-            if key == 'Fullsample':
-                continue
-            cutFlow[key] = val/cutFlow['Fullsample']
-        cutFlow['Fullsample'] = 1.0
-         
+        
 
     metBins = [250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  
             740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 99999]
@@ -333,15 +290,10 @@ def getRecastData(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweig
 
     # Split results into 3 data taking periods:
     dataDict.update({key : [] for key in modelDict})
-    dataDict.update({key : [] for key in list(cutFlowAll.values())[0]})
 
     for ds in dataDict['Data-takingperiod']:
         # Store common values to all datasets:
         for key,val in modelDict.items():
-            dataDict[key].append(val)
-        # Store dataset-dependent cutflows:
-        cutFlow = cutFlowAll[ds]
-        for key,val in cutFlow.items():
             dataDict[key].append(val)
         met = metAll[ds]
         ns = np.array(yields[ds])
@@ -362,7 +314,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser( description=
             "Run the recasting for CMS-EXO-20-004 using one or multiple Delphes ROOT files as input. "
             + "If multiple files are given as argument, add them (the samples weights will be normalized if -n is given)."
-            + " Store the cutflow and SR bins in a pickle (Pandas DataFrame) file." )
+            + " Store the signal yields for the SR bins in a pickle (Pandas DataFrame) file." )
     ap.add_argument('-f', '--inputFile', required=True,nargs='+',
             help='path to the ROOT event file(s) generated by Delphes.', default =[])
     ap.add_argument('-o', '--outputFile', required=False,
@@ -377,6 +329,9 @@ if __name__ == "__main__":
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
     ap.add_argument('-rmax', '--maxJetR', required=False,type=float,default=-1.0,
             help='Maximum RDV displacement for jets matched to a LLP. If negative, it will be ignored.')
+    ap.add_argument('-llpmax', '--maxLLPR', required=False,type=float,default=-1.0,
+            help='Maximum transverse decay length for any LLP. If negative, it will be ignored.')
+
     ap.add_argument('-U', '--update', required=False,action='store_true',
             help='If the flag is set only the model points containing data newer than the dataframe will be read.')
     
@@ -435,7 +390,8 @@ if __name__ == "__main__":
         print('----------------------------------')
         print('\t Model: %s (%i files)' %(mDict,len(fileList)))
 
-        dataDict = getRecastData(fileList,args.maxJetR,args.model,mDict,addweights=args.add)
+        dataDict = getRecastData(fileList,args.maxJetR,args.maxLLPR,
+                                 args.model,mDict,addweights=args.add)
         if args.verbose == 'debug':
             for k,v in dataDict.items():
                 print(k,v)

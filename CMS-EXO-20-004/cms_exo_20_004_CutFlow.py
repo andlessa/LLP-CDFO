@@ -25,7 +25,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights=False):
+def getCutFlow(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,model='sbottom',modelDict=None,addweights=False):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -204,11 +204,14 @@ def getCutFlow(inputFiles,maxJetR=-1.0,model='sbottom',modelDict=None,addweights
             if abs(jetList[0].Eta) > etamax: continue
             cutFlow['LeadingAK4jet$\eta<2.4$'] += (ns,ns**2)
 
-            if maxJetR > 0.0:
+            if maxLLPR > 0.0 or maxJetR > 0.0:
                 llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+            
+            if maxLLPR > 0.0 and any(llp.r_decay > maxLLPR for llp in llps):
+                continue
+            
+            if maxJetR > 0.0:                
                 # Remove LLPs decaying outside the detector!
-                if any(llp.r_decay > 1e4 for llp in llps):
-                    continue
                 jetsDisp = getDisplacedJets(jetList,llps)
                 maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
                 if maxR > maxJetR:
@@ -281,6 +284,8 @@ if __name__ == "__main__":
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
     ap.add_argument('-rmax', '--maxJetR', required=False,type=float,default=-1.0,
             help='Maximum RDV displacement for jets matched to a LLP. If negative, it will be ignored.')
+    ap.add_argument('-llpmax', '--maxLLPR', required=False,type=float,default=-1.0,
+            help='Maximum transverse decay length for any LLP. If negative, it will be ignored.')
 
 
     # First make sure the correct env variables have been set:
@@ -305,7 +310,8 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.maxJetR,args.model,mDict,addweights=args.add)
+        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.maxJetR,args.maxLLPR,
+                                                  args.model,mDict,addweights=args.add)
         dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
             dataDict[key] = [(val,cutFlowErr[key])]

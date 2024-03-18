@@ -2,6 +2,8 @@
 
 homeDIR="$( pwd )"
 
+echo "Installation will take place in $homeDIR"
+
 echo "[Checking system dependencies]"
 PKG_OK=$(dpkg-query -W -f='${Status}' autoconf 2>/dev/null | grep -c "ok installed")
 if test $PKG_OK = "0" ; then
