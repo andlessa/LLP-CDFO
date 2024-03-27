@@ -8,8 +8,8 @@ import time
 import progressbar as P
 import sys
 sys.path.append('../')
-from helper import getLLPs,getModelDict,splitModels
-from atlas_susy_2018_42_Recast import getHSCPCandidates,applyHSCPSelection,applyMuonTagging,removeFromMET,getMassSelEff
+from helper import getLLPs,getModelDict,splitModels,getHSCPCandidates
+from atlas_susy_2018_42_Recast import applyHSCPSelection,applyMuonTagging,removeFromMET,getMassSelEff
 from ATLAS_data.effFunctions import getTriggerEff,getTrackEff,getSelectionEff
 
 delphesDir = os.path.abspath("../DelphesLLP")

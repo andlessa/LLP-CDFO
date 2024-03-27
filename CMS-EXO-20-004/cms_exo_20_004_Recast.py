@@ -6,7 +6,7 @@ import pandas as pd
 import time
 import sys
 sys.path.append('../')
-from helper import getModelDict,splitModels,getDisplacedJets,getLLPs
+from helper import getModelDict,splitModels,getDisplacedJets,getLLPs,getHSCPCandidates
 import progressbar as P
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -60,7 +60,7 @@ def passVetoPtMiss2018(met):
     return False
 
 # ### Define dictionary to store data
-def getRecastData(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,
+def getRecastData(inputFiles,llpVeto=False,
                   model='sbottom',modelDict=None,addweights=False):
 
     if len(inputFiles) > 1:
@@ -241,17 +241,17 @@ def getRecastData(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,
             if len(jetList) < 1 or jetList[0].PT < pTj1min: continue
             if abs(jetList[0].Eta) > etamax: continue
 
-            if maxLLPR > 0.0 or maxJetR > 0.0:
+            if llpVeto:            
                 llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
-            
-            if maxLLPR > 0.0 and any(llp.r_decay > maxLLPR for llp in llps):
-                continue
-            
-            if maxJetR > 0.0:                
-                # Remove LLPs decaying outside the detector!
+                hscps = getHSCPCandidates(llps) # Select charged LLPs
+                # Veto HSCPs decaying after 1m
+                if any(hscp.r_decay > 1e3 for hscp in hscps):
+                    continue
+                # Veto displaced jets
                 jetsDisp = getDisplacedJets(jetList,llps)
                 maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
-                if maxR > maxJetR:
+                # Veto displacements larger than 2mm
+                if maxR > 2.0:
                     continue
             
 
@@ -327,10 +327,8 @@ if __name__ == "__main__":
             help='Gen level MET cut for computing partial cross-sections.')
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
-    ap.add_argument('-rmax', '--maxJetR', required=False,type=float,default=-1.0,
-            help='Maximum RDV displacement for jets matched to a LLP. If negative, it will be ignored.')
-    ap.add_argument('-llpmax', '--maxLLPR', required=False,type=float,default=-1.0,
-            help='Maximum transverse decay length for any LLP. If negative, it will be ignored.')
+    ap.add_argument('-llpveto', '--llpVeto', required=False,action='store_true',default=False,
+            help='If set, applies a veto on displaced jets matched to a LLP and HSPCs.')
 
     ap.add_argument('-U', '--update', required=False,action='store_true',
             help='If the flag is set only the model points containing data newer than the dataframe will be read.')
@@ -365,10 +363,10 @@ if __name__ == "__main__":
 
 
         if outputFile is None:
-            if args.maxJetR < 0.0:
+            if not args.llpVeto:
                 outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004.pcl')
             else:
-                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_maxR_%1.0f.pcl' %args.maxJetR)
+                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_llpVeto_%1.0f.pcl')
         else:
             outFile = outputFile[:]
 
@@ -390,7 +388,7 @@ if __name__ == "__main__":
         print('----------------------------------')
         print('\t Model: %s (%i files)' %(mDict,len(fileList)))
 
-        dataDict = getRecastData(fileList,args.maxJetR,args.maxLLPR,
+        dataDict = getRecastData(fileList,args.llpVeto,
                                  args.model,mDict,addweights=args.add)
         if args.verbose == 'debug':
             for k,v in dataDict.items():

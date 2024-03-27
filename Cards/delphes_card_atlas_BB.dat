@@ -864,7 +864,7 @@ module TreeWriter TreeWriter {
 #  add Branch Delphes/stableParticles StableParticle GenParticle
   add Branch LLPFilter/finalDaughters bsmFinalDaughters GenParticle
   add Branch LLPFilter/directDaughters bsmDirectDaughters GenParticle
-  add Branch LLPFilter/mothers bsmMothers GenParticle  
+  add Branch LLPFilter/mothers bsmMothers GenParticle
   add Branch LLPIsolation/isoLLPs bsm GenParticle
   add Branch DMFilter/dmParticles dmParticles GenParticle
   add Branch DMMissingET/momentum DMMissingET MissingET    

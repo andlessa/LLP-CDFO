@@ -212,6 +212,17 @@ def getDisplacedJets(jets,llps,skipPIDs=[1000022]):
     
     return displacedJets
 
+def getHSCPCandidates(llps):
+
+    candidates = []
+    # Check if llps have charge = 1:
+    for llp in llps:
+        if abs(llp.getCharge()) != 1.0:
+            continue
+        candidates.append(llp)
+
+    return candidates
+
 def getModelDict(inputFile,model,verbose=True):
 
     if model == 'ewk':

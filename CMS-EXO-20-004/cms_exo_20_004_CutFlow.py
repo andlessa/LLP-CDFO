@@ -6,7 +6,7 @@ import pandas as pd
 import time
 import sys
 sys.path.append('../')
-from helper import getModelDict,splitModels,getDisplacedJets,getLLPs
+from helper import getModelDict,splitModels,getDisplacedJets,getLLPs,getHSCPCandidates
 from cms_exo_20_004_Recast import passVetoJets2018,passVetoPtMiss2018
 import progressbar as P
 
@@ -25,7 +25,7 @@ ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"
 
 
 # ### Define dictionary to store data
-def getCutFlow(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,model='sbottom',modelDict=None,addweights=False):
+def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweights=False):
 
     if len(inputFiles) > 1:
         print('Combining files:')
@@ -79,7 +79,10 @@ def getCutFlow(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,model='sbottom',modelDict=No
 
     lumi =  59.7
     totalweightPB = 0.0
-    keys = ['Total','Triggeremulation','$MET > 250$ GeV', 'Electronveto','Muonveto', 'Tauveto', 'Bjetveto', 'Photonveto','$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad','LeadingAK4jet$p_{T}>100$GeV', 'LeadingAK4jet$\eta<2.4$', 'DisplacedJet veto ($R < %1.1f$)' %maxJetR, 'HCALmitigation(jets)','HCALmitigation($\phi^{miss}$)']
+    keys = ['Total','Triggeremulation','$MET > 250$ GeV', 'Electronveto','Muonveto', 'Tauveto', 'Bjetveto', 'Photonveto','$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad','LeadingAK4jet$p_{T}>100$GeV', 'LeadingAK4jet$\eta<2.4$']
+    if llpVeto:
+        keys += ['LLP veto']
+    keys += ['HCALmitigation(jets)','HCALmitigation($\phi^{miss}$)']
     cutFlow = { k : np.zeros(2) for k in keys}
 
 
@@ -204,20 +207,20 @@ def getCutFlow(inputFiles,maxJetR=-1.0,maxLLPR=-1.0,model='sbottom',modelDict=No
             if abs(jetList[0].Eta) > etamax: continue
             cutFlow['LeadingAK4jet$\eta<2.4$'] += (ns,ns**2)
 
-            if maxLLPR > 0.0 or maxJetR > 0.0:
+            if llpVeto:            
                 llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
-            
-            if maxLLPR > 0.0 and any(llp.r_decay > maxLLPR for llp in llps):
-                continue
-            
-            if maxJetR > 0.0:                
-                # Remove LLPs decaying outside the detector!
+                hscps = getHSCPCandidates(llps) # Select charged LLPs
+                # Veto HSCPs decaying after 1m
+                if any(hscp.r_decay > 1e3 for hscp in hscps):
+                    continue
+                # Veto displaced jets
                 jetsDisp = getDisplacedJets(jetList,llps)
                 maxR = max([0.0]+[j.llp.r_decay for j in jetsDisp])
-                if maxR > maxJetR:
+                # Veto displacements larger than 2mm
+                if maxR > 2.0:
                     continue
             
-            cutFlow['DisplacedJet veto ($R < %1.1f$)' %maxJetR] += (ns,ns**2)
+                cutFlow['LLP veto'] += (ns,ns**2)
 
 
             if not passVetoJets2018(jetList):
@@ -282,10 +285,9 @@ if __name__ == "__main__":
             help='If set, the input files will be considered to refer to samples of the orthogonal processes and their weights will be added.')    
     ap.add_argument('-m', '--model', required=False,type=str,default='sbottom',
             help='Defines which model should be considered for extracting model parameters (strong,ewk,gluino,sbottom).')
-    ap.add_argument('-rmax', '--maxJetR', required=False,type=float,default=-1.0,
-            help='Maximum RDV displacement for jets matched to a LLP. If negative, it will be ignored.')
-    ap.add_argument('-llpmax', '--maxLLPR', required=False,type=float,default=-1.0,
-            help='Maximum transverse decay length for any LLP. If negative, it will be ignored.')
+    ap.add_argument('-llpveto', '--llpVeto', required=False,action='store_true',default=False,
+            help='If set, applies a veto on displaced jets matched to a LLP and HSPCs.')
+
 
 
     # First make sure the correct env variables have been set:
@@ -310,7 +312,7 @@ if __name__ == "__main__":
     # Split input files by distinct models and get recast data for
     # the set of files from the same model:
     for fileList,mDict in splitModels(inputFiles,args.model):
-        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.maxJetR,args.maxLLPR,
+        modelDict,cutFlow,cutFlowErr = getCutFlow(fileList,args.llpVeto,
                                                   args.model,mDict,addweights=args.add)
         dataDict = {key : [val] for key,val in modelDict.items()}
         for key,val in cutFlow.items():
@@ -320,7 +322,7 @@ if __name__ == "__main__":
             if args.maxJetR < 0.0:
                 outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_cutflow.pcl')
             else:
-                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_cutflow_maxR_%1.0f.pcl' %args.maxJetR)
+                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_cutflow_llpVeto.pcl')
         else:
             outFile = outputFile[:]
 

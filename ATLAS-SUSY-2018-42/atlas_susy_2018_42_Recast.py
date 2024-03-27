@@ -7,7 +7,7 @@ import time
 import sys
 sys.path.append('../')
 import progressbar as P
-from helper import getLLPs,getModelDict,splitModels
+from helper import getLLPs,getHSCPCandidates,getModelDict,splitModels
 from ATLAS_data.effFunctions import (getMuonRecoEff,getTriggerEff,getTrackEff,
                                      getSelectionEff,getTargetMass,getMassSelEff,
                                      massLong,massShort)
@@ -26,16 +26,6 @@ ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"')
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
 
-def getHSCPCandidates(llps):
-
-    candidates = []
-    # Check if llps have charge = 1:
-    for llp in llps:
-        if abs(llp.getCharge()) != 1.0:
-            continue
-        candidates.append(llp)
-
-    return candidates
 
 def applyHSCPSelection(hscpList,pT=50.,eta=2.4,r=500.):
 
