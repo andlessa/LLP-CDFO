@@ -213,28 +213,33 @@ def runDelphesPythia8(parser,runInfo):
     nevts = parser["MadGraphSet"]["nevents"]
     lheFile = os.path.join(runFolder,'Events',runInfo['run number'],'unweighted_events.lhe.gz')
     rootFile = os.path.join(runFolder,'Events',runInfo['run number'], '%s_delphes_events.root'  %runInfo['run tag'])
-
+    pythiaFile = os.path.join(runFolder,'Events',runInfo['run number'],'pythia8_card.dat')
+    delphesFile = os.path.join(runFolder,'Events',runInfo['run number'],'delphes_card.dat')
+    shutil.copyfile(pythiaCard,pythiaFile)
+    shutil.copyfile(delphescard,delphesFile)
     #Generate pythia card with additional info
-    pythia_tmp = tempfile.mkstemp(suffix='.dat', prefix='pythia_card_', dir=delphesDir)
-    os.close(pythia_tmp[0])
-    pythia_tmp = pythia_tmp[1]
-    shutil.copyfile(pythiaCard,pythia_tmp)
-    with open(pythia_tmp,'a') as f:
+    with open(pythiaFile,'a') as f:
         f.write('\n\n')
         f.write('### Added lines:\n')
         f.write('Beams:frameType = 4\n')
         f.write('Beams:LHEF = %s\n' %lheFile)
+        f.write('Beams:setProductionScalesFromLHEF=on\n')
         f.write('Main:numberOfEvents   = %i\n' %nevts)
+        # Matching specific parameters:
+        if pars['matching']:        
+            qcut = 1.5*parser["MadGraphSet"]['xqcut']
+            njet = pars['njetmax']
+            f.write('JetMatching:merge=on \n')
+            f.write('JetMatching:qCut         = %1.2f \n' %qcut)
+            f.write('JetMatching:nJetMax      = %i \n' %njet)
 
-    logger.debug("Running DelphesPythia8 with config files %s and %s" %(pythia_tmp,delphescard))
-    run = subprocess.Popen('./DelphesPythia8 %s %s %s' %(delphescard,pythia_tmp,rootFile),shell=True,
+    logger.debug("Running DelphesPythia8 with config files %s and %s" %(pythiaFile,delphesFile))
+    run = subprocess.Popen('./DelphesPythia8 %s %s %s' %(delphescard,pythiaFile,rootFile),shell=True,
                                 stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,
                                 cwd=delphesDir)
     output,errorMsg = run.communicate()
 
     runInfo.update({'DelphesOutput' : output, 'DelphesError' : errorMsg})
-
-    os.remove(pythia_tmp)
 
     #Generate pythia log file
     pythia_log = rootFile.replace('_delphes_events.root','_pythia_delphes.log')

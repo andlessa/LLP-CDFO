@@ -112,7 +112,7 @@ def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweight
             tree.GetEntry(ievt)        
 
             jets = tree.Jet
-            weightPB = tree.Weight.At(1).Weight
+            weightPB = tree.Event.At(0).Weight/nevts
             weightPB = weightPB*norm
             ns = weightPB*1e3*lumi # number of signal events
             totalweightPB += weightPB

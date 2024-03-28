@@ -146,7 +146,7 @@ def getRecastData(inputFiles,llpVeto=False,
 
             jets = tree.Jet
             try:
-                weightPB = tree.Weight.At(1).Weight
+                weightPB = tree.Event.At(0).Weight/nevts
             except:
                 weightPB = tree.Weight.At(0).Weight
             weightPB = weightPB*norm
