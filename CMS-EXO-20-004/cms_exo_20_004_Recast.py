@@ -138,8 +138,7 @@ def getRecastData(inputFiles,llpVeto=False,
         else:
             norm = 1.0
 
-        for ievt in range(nevts):    
-            
+        for ievt in range(nevts):
             ntotal += 1
             progressbar.update(ntotal)
             tree.GetEntry(ievt)        
@@ -242,7 +241,8 @@ def getRecastData(inputFiles,llpVeto=False,
             if abs(jetList[0].Eta) > etamax: continue
 
             if llpVeto:            
-                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,
+                               tree.bsmFinalDaughters,mothers=tree.bsmMothers)
                 hscps = getHSCPCandidates(llps) # Select charged LLPs
                 # Veto HSCPs decaying after 1m
                 if any(hscp.r_decay > 1e3 for hscp in hscps):
@@ -366,7 +366,7 @@ if __name__ == "__main__":
             if not args.llpVeto:
                 outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004.pcl')
             else:
-                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_llpVeto_%1.0f.pcl')
+                outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_llpVeto.pcl')
         else:
             outFile = outputFile[:]
 
