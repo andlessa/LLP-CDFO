@@ -17,6 +17,8 @@ Next:numberShowEvent = 1           ! print event record n times
 Next:numberShowLHA  = 0
 Stat:showProcessLevel = on
 Stat:showErrors = on
+Check:epTolErr = 1.00e-2
+Main:timesAllowErrors = 100
 
 
 JetMatching:doShowerKt   = off

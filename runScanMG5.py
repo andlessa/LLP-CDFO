@@ -225,6 +225,7 @@ def runDelphesPythia8(parser,runInfo):
         f.write('Beams:LHEF = %s\n' %lheFile)
         f.write('Beams:setProductionScalesFromLHEF=on\n')
         f.write('Main:numberOfEvents   = %i\n' %nevts)
+        f.write('Main:timesAllowErrors   = %i\n' %int(1e-2*nevts)) # Allow at most 1% of failures
         # Matching specific parameters:
         if pars['matching']:        
             qcut = 1.5*parser["MadGraphSet"]['xqcut']
