@@ -22,6 +22,8 @@ def computeULs(inputFile,outputFile):
     allDF.drop(columns=[c for c in allDF.columns if "del_me" in c],inplace=True)
     allDF['robs'] = allDF['$N_s$']/allDF['S95_obs']
     allDF['rexp'] = allDF['$N_s$']/allDF['S95_exp']
+    allDF['robsErr'] = allDF['$\sigma_{Ns}$']/allDF['S95_obs']
+    allDF['rexpErr'] = allDF['$\sigma_{Ns}$']/allDF['S95_exp']
 
     # Filter data, so only the highest robs is kept
     mLLP = 'mLLP'
