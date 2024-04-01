@@ -88,14 +88,11 @@ def getCutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = nevtsDict[inputFile]
-        # If addweights = Fakse: 
-        # assume multiple files correspond to equivalent samplings
-        # of the same distributions
-        # If addweights = True: directly add events
-        if not addweights:
-            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        norm = getEventNorm(userInfo,addweights,nevts,nTotal)
+        if addweights:
+            totalXsecPB += userInfo['CrossSectionPB']
         else:
-            norm = 1.0
+            totalXsecPB += userInfo['CrossSectionPB']*nevts/nTotal
 
         for ievt in range(nevts):    
             
