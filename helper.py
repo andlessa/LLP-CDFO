@@ -250,6 +250,7 @@ def getModelDict(inputFile,model,verbose=True):
         with open(banner,'r') as ff:
             slhaData = ff.read().split('<slha>')[1].split('</slha>')[0]
             slhaData = pyslha.readSLHA(slhaData)
+                
     parsDict = {}
     parsDict['mLLP'] = slhaData.blocks['MASS'][LLP]
     parsDict['mLSP'] = slhaData.blocks['MASS'][LSP]
@@ -257,7 +258,7 @@ def getModelDict(inputFile,model,verbose=True):
     if parsDict['width']:
         parsDict['tau_ns'] = (6.582e-25/parsDict['width'])*1e9
     else:
-        parsDict['tau_ns'] = np.inf    
+        parsDict['tau_ns'] = np.inf
 
     modelInfoDict.update(parsDict)
     if verbose:
@@ -289,3 +290,61 @@ def splitModels(inputFiles,model='sbottom'):
         # Sort files by modified time, so older comes first
         fileList.sort(key=os.path.getmtime)
         yield (fileList,mDict)
+
+def getUserInfo(tree,inputFile):
+    """
+    Tries to fetch information stored in the tree meta data.
+    If fails, try to fetch from banner.
+    """
+
+    # First tries to fetch information from tree:
+    userInfo = {}    
+    try:
+        for i in range(tree.GetUserInfo().GetSize()):
+            userInfo[tree.GetUserInfo().At(i).GetName()] = tree.GetUserInfo().At(i).GetVal()
+    except:
+        banner = list(glob.glob(os.path.join(os.path.dirname(inputFile),'*banner*txt')))
+        if len(banner) == 0:
+            return {}
+        banner = banner[0]    
+        with open(banner,'r') as ff:
+            mcData = ff.read().split('<MGGenerationInfo>')[1].split('</MGGenerationInfo>')[0]
+            for l in mcData.splitlines():
+                l = l.replace('#','')
+                x = [xx.strip() for xx in l.split(':')]
+                if x[0] == 'Number of Events':
+                    nevts_lhe = eval(x[1])
+                if x[0] == 'Integrated weight (pb)':
+                    xsec_lhe = eval(x[1])
+
+        userInfo['nTried'] = nevts_lhe
+        userInfo['nSelected'] = nevts_lhe
+        userInfo['nAccepted'] = tree.GetEntries()        
+        userInfo['CrossSectionPB'] = xsec_lhe*userInfo['nAccepted']/userInfo['nSelected']
+    
+    return userInfo
+
+def getEventNorm(userInfo={},addweights=False,nFile=1,nTotal=1):
+    """
+    Computes event norm.
+
+    :param userInfo: Dictionary with number of accepted and selected events 
+                     (needed when events were generated with MLM matching, but the weight was not renormalized)
+    :param addweights: If True, directly add weights (assume event from distinct files correspond to distinct processes).
+                       If False, assume distinct files correspond to the same process.
+    :param nFile: number of events in current file
+    :param nTotal: total number of events over all files
+    """
+
+    norm = 1.0
+    # If information is available set norm to ratio of accepted/selected events
+    # (it will differ from 1 if case MLM matching has been applied)
+    if userInfo: 
+        norm = userInfo['nAccepted']/userInfo['nSelected']
+    # If not add weights
+    if not addweights:
+        norm = norm*float(nFile)/float(nTotal)
+
+    return norm
+
+        

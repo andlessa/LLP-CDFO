@@ -7,7 +7,7 @@ import time
 import progressbar as P
 import sys
 sys.path.append('../')
-from helper import getLLPs,getJets,getDisplacedJets,getModelDict,splitModels
+from helper import getLLPs,getJets,getDisplacedJets,getModelDict,getUserInfo,getEventNorm,splitModels
 from ATLAS_data.effFunctions import eventEff,vertexEff
 from atlas_susy_2018_13_Recast import eventAcc, vertexAcc
 
@@ -38,21 +38,24 @@ def getCutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
 
     modelDict['Total MC Events'] = 0
 
-    nevtsDict = {}
+    
     # Get total number of events:
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         if nevtsMax > 0:
             nevts = min(nevtsMax,nevts)
         modelDict['Total MC Events'] += nevts        
-        nevtsDict[inputFile] = nevts
+        
         f.Close()
 
 
     lumi = 139.0
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
     # Keep track of yields for each dataset
     cutFlow = {}
     if model == 'strong':
@@ -79,6 +82,8 @@ def getCutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
 
     ntotal = 0
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
@@ -149,6 +154,14 @@ def getCutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
 
         f.Close()
     progressbar.finish()
+
+
+    # Check if cross-sections agree:
+    if totalXsecPB and abs(totalXsecPB-totalweightPB) > 1e-3*totalXsecPB:
+        print('Something wrong with the cross-sections!')
+        print('Total cross-section from input: %1.3e' %totalXsecPB)
+        print('Sum of event weights: %1.3e' %totalweightPB)
+        sys.exit()
 
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)

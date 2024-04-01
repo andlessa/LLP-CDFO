@@ -7,7 +7,7 @@ import time
 import sys
 sys.path.append('../')
 import progressbar as P
-from helper import getLLPs,getHSCPCandidates,getModelDict,splitModels
+from helper import getLLPs,getHSCPCandidates,getModelDict,getUserInfo,getEventNorm,splitModels
 from ATLAS_data.effFunctions import (getMuonRecoEff,getTriggerEff,getTrackEff,
                                      getSelectionEff,getTargetMass,getMassSelEff,
                                      massLong,massShort)
@@ -109,20 +109,23 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,addweights=False):
 
     modelDict['Total MC Events'] = 0
 
-    nevtsDict = {}
+    
     # Get total number of events:
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         modelDict['Total MC Events'] += nevts        
-        nevtsDict[inputFile] = nevts
+        
         f.Close()
 
 
     lumi = 139.0
     yields = {}
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
 
 
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
@@ -131,18 +134,17 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,addweights=False):
     progressbar.start()
 
     ntotal = 0
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        # If addweights = False: 
-        # assume multiple files correspond to equivalent samplings
-        # of the same distributions
-        # If addweights = True: directly add events
-        if not addweights:
-            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        userInfo = getUserInfo(tree,inputFile)
+        norm = getEventNorm(userInfo,addweights,nevts,nTotal)
+        if addweights:
+            totalXsecPB += userInfo['CrossSectionPB']
         else:
-            norm = 1.0
+            totalXsecPB += userInfo['CrossSectionPB']*nevts/nTotal
 
         for ievt in range(nevts):    
             
@@ -218,6 +220,14 @@ def getRecastData(inputFiles,model='sbottom',modelDict=None,addweights=False):
             
         f.Close()
     progressbar.finish()
+
+
+    # Check if cross-sections agree:
+    if totalXsecPB and abs(totalXsecPB-totalweightPB) > 1e-3*totalXsecPB:
+        print('Something wrong with the cross-sections!')
+        print('Total cross-section from input: %1.3e' %totalXsecPB)
+        print('Sum of event weights: %1.3e' %totalweightPB)
+        sys.exit()
 
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)

@@ -8,7 +8,7 @@ import progressbar as P
 import sys
 from ATLAS_data.effFunctions import eventEff,vertexEff
 sys.path.append('../')
-from helper import getLLPs,getJets,getModelDict,splitModels
+from helper import getLLPs,getJets,getModelDict,getUserInfo,getEventNorm,splitModels
 from atlas_susy_2016_08_Recast import eventAcc, vertexAcc
 
 
@@ -40,19 +40,22 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
 
     modelDict['Total MC Events'] = 0
 
-    nevtsDict = {}
+    
     # Get total number of events:
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         modelDict['Total MC Events'] += nevts        
-        nevtsDict[inputFile] = nevts
+        
         f.Close()
 
 
     lumi = 32.8
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
     # Keep track of yields for each dataset
     keys = ["Total", "$MET > 200$ GeV", "Jet Selection", 
             "$R_{xy},z <$ 300 mm", "$R_{DV} > 4$ mm",
@@ -69,18 +72,18 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
 
     ntotal = 0
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
-        # If addweights = False: 
-        # assume multiple files correspond to equivalent samplings
-        # of the same distributions
-        # If addweights = True: directly add events
-        if not addweights:
-            norm =nevtsDict[inputFile]/modelDict['Total MC Events']
+        userInfo = getUserInfo(tree,inputFile)
+        norm = getEventNorm(userInfo,addweights,nevts,nTotal)
+        if addweights:
+            totalXsecPB += userInfo['CrossSectionPB']
         else:
-            norm = 1.0
+            totalXsecPB += userInfo['CrossSectionPB']*nevts/nTotal
 
 
         for ievt in range(nevts):    
@@ -158,6 +161,14 @@ def getCutFlow(inputFiles,model='sbottom',modelDict=None,effStrategy='official',
 
         f.Close()
     progressbar.finish()
+
+
+    # Check if cross-sections agree:
+    if totalXsecPB and abs(totalXsecPB-totalweightPB) > 1e-3*totalXsecPB:
+        print('Something wrong with the cross-sections!')
+        print('Total cross-section from input: %1.3e' %totalXsecPB)
+        print('Sum of event weights: %1.3e' %totalweightPB)
+        sys.exit()
 
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)

@@ -7,7 +7,7 @@ import time
 import progressbar as P
 import sys
 sys.path.append('../')
-from helper import getLLPs,getJets,getDisplacedJets,getModelDict,splitModels
+from helper import getLLPs,getJets,getDisplacedJets,getModelDict,getUserInfo,getEventNorm,splitModels
 from ATLAS_data.effFunctions import eventEff,vertexEff
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -88,19 +88,22 @@ def getRecastData(inputFiles,model='strong',modelDict=None,addweights=False):
 
     modelDict['Total MC Events'] = 0
 
-    nevtsDict = {}
+    
     # Get total number of events:
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         modelDict['Total MC Events'] += nevts        
-        nevtsDict[inputFile] = nevts
+        
         f.Close()
 
 
     lumi = 139.0
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
     # Keep track of yields for each dataset
     keys = ["Total", "Jet selection", "DV selection"]
     cutFlowHighPT = { k : np.zeros(2) for k in keys}    
@@ -113,10 +116,13 @@ def getRecastData(inputFiles,model='strong',modelDict=None,addweights=False):
 
     ntotal = 0
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         # If addweights = Fakse: 
         # assume multiple files correspond to equivalent samplings
         # of the same distributions
@@ -178,6 +184,14 @@ def getRecastData(inputFiles,model='strong',modelDict=None,addweights=False):
 
         f.Close()
     progressbar.finish()
+
+
+    # Check if cross-sections agree:
+    if totalXsecPB and abs(totalXsecPB-totalweightPB) > 1e-3*totalXsecPB:
+        print('Something wrong with the cross-sections!')
+        print('Total cross-section from input: %1.3e' %totalXsecPB)
+        print('Sum of event weights: %1.3e' %totalweightPB)
+        sys.exit()
 
     modelDict['Total xsec (pb)'] = totalweightPB
     print('\nCross-section (pb) = %1.3e\n' %totalweightPB)

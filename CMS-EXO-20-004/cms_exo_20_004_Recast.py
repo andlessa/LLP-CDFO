@@ -6,7 +6,7 @@ import pandas as pd
 import time
 import sys
 sys.path.append('../')
-from helper import getModelDict,splitModels,getDisplacedJets,getLLPs,getHSCPCandidates
+from helper import getModelDict,getUserInfo,getEventNorm,splitModels,getDisplacedJets,getLLPs,getHSCPCandidates
 import progressbar as P
 
 delphesDir = os.path.abspath("../DelphesLLP")
@@ -75,14 +75,16 @@ def getRecastData(inputFiles,llpVeto=False,
 
     modelDict['Total MC Events'] = 0
 
-    nevtsDict = {}
+    
     # Get total number of events:
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         modelDict['Total MC Events'] += nevts        
-        nevtsDict[inputFile] = nevts
+        
         f.Close()
 
     # ## Cuts
@@ -118,6 +120,7 @@ def getRecastData(inputFiles,llpVeto=False,
     yields = {ds : [] for ds in luminosities}
     metAll = {ds : [] for ds in luminosities}
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
     
     progressbar = P.ProgressBar(widgets=["Reading %i Events: " %modelDict['Total MC Events'], 
                                 P.Percentage(),P.Bar(marker=P.RotatingMarker()), P.ETA()])
@@ -125,10 +128,12 @@ def getRecastData(inputFiles,llpVeto=False,
     progressbar.start()
 
     ntotal = 0
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         # If addweights = Fakse: 
         # assume multiple files correspond to equivalent samplings
         # of the same distributions
@@ -266,6 +271,14 @@ def getRecastData(inputFiles,llpVeto=False,
             
         f.Close()
     progressbar.finish()
+
+
+    # Check if cross-sections agree:
+    if totalXsecPB and abs(totalXsecPB-totalweightPB) > 1e-3*totalXsecPB:
+        print('Something wrong with the cross-sections!')
+        print('Total cross-section from input: %1.3e' %totalXsecPB)
+        print('Sum of event weights: %1.3e' %totalweightPB)
+        sys.exit()
 
     modelDict['Total xsec-pT150 (pb)'] = 0.0
     # Store total (combined xsec)

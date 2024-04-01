@@ -6,7 +6,7 @@ import pandas as pd
 import time
 import sys
 sys.path.append('../')
-from helper import getModelDict,splitModels,getDisplacedJets,getLLPs,getHSCPCandidates
+from helper import getModelDict,getUserInfo,getEventNorm,splitModels,getDisplacedJets,getLLPs,getHSCPCandidates
 from cms_exo_20_004_Recast import passVetoJets2018,passVetoPtMiss2018
 import progressbar as P
 
@@ -39,14 +39,16 @@ def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweight
 
     modelDict['Total MC Events'] = 0
 
-    nevtsDict = {}
+    
     # Get total number of events:
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         modelDict['Total MC Events'] += nevts        
-        nevtsDict[inputFile] = nevts
+        
         f.Close()
 
     # ## Cuts
@@ -79,6 +81,7 @@ def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweight
 
     lumi =  59.7
     totalweightPB = 0.0
+    totalXsecPB = 0.0 # Get xsec directly from input
     keys = ['Total','Triggeremulation','$MET > 250$ GeV', 'Electronveto','Muonveto', 'Tauveto', 'Bjetveto', 'Photonveto','$\Delta \phi (jet,p_{T}^{miss})>0.5$ rad','LeadingAK4jet$p_{T}>100$GeV', 'LeadingAK4jet$\eta<2.4$']
     if llpVeto:
         keys += ['LLP veto']
@@ -92,10 +95,12 @@ def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweight
     progressbar.start()
 
     ntotal = 0
+    nTotal = modelDict['Total MC Events']
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
         nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         # If addweights = Fakse: 
         # assume multiple files correspond to equivalent samplings
         # of the same distributions
@@ -232,6 +237,14 @@ def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweight
 
         f.Close()
     progressbar.finish()
+
+
+    # Check if cross-sections agree:
+    if totalXsecPB and abs(totalXsecPB-totalweightPB) > 1e-3*totalXsecPB:
+        print('Something wrong with the cross-sections!')
+        print('Total cross-section from input: %1.3e' %totalXsecPB)
+        print('Sum of event weights: %1.3e' %totalweightPB)
+        sys.exit()
 
 
     # Store total (combined xsec)
