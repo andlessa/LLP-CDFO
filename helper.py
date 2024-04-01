@@ -300,6 +300,8 @@ def getUserInfo(tree,inputFile):
     # First tries to fetch information from tree:
     userInfo = {}    
     try:
+        if int(tree.GetUserInfo().GetSize()) == 0:
+            raise ValueError('UserInfo not found in ROOT file. Fetching information from banner')
         for i in range(tree.GetUserInfo().GetSize()):
             userInfo[tree.GetUserInfo().At(i).GetName()] = tree.GetUserInfo().At(i).GetVal()
     except:
