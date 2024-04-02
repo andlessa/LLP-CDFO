@@ -210,7 +210,8 @@ def getCutFlow(inputFiles,llpVeto=False,model='sbottom',modelDict=None,addweight
             cutFlow['LeadingAK4jet$\eta<2.4$'] += (ns,ns**2)
 
             if llpVeto:            
-                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,tree.bsmFinalDaughters)
+                llps = getLLPs(tree.bsm,tree.bsmDirectDaughters,
+                               tree.bsmFinalDaughters,mothers=tree.bsmMothers)
                 hscps = getHSCPCandidates(llps) # Select charged LLPs
                 # Veto HSCPs decaying after 1m
                 if any(hscp.r_decay > 1e3 for hscp in hscps):
@@ -329,7 +330,7 @@ if __name__ == "__main__":
             dataDict[key] = [(val,cutFlowErr[key])]
 
         if outputFile is None:
-            if args.maxJetR < 0.0:
+            if not args.llpVeto:
                 outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_cutflow.pcl')
             else:
                 outFile = fileList[0].replace('delphes_events.root','cms_exo_20_004_cutflow_llpVeto.pcl')
