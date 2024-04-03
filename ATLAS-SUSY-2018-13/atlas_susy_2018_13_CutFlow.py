@@ -87,7 +87,8 @@ def getCutFlow(inputFiles,model='sbottom',sr='HighPT',nevtsMax=-1,modelDict=None
     for inputFile in inputFiles:
         f = ROOT.TFile(inputFile,'read')
         tree = f.Get("Delphes")
-        nevts = nevtsDict[inputFile]
+        nevts = tree.GetEntries()
+        userInfo = getUserInfo(tree,inputFile)
         norm = getEventNorm(userInfo,addweights,nevts,nTotal)
         if addweights:
             totalXsecPB += userInfo['CrossSectionPB']
