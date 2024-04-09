@@ -1,0 +1,262 @@
+<analysis id="cms_exo_19_010">
+  <lumi>140.4</lumi> <!-- in fb^-1 -->
+
+<region type="signal" id="SR1_2017">
+    <nobs>17</nobs>
+    <nb>12.2</nb>
+    <deltanb>4.8</deltanb>
+    <covariance region="SR1_2017" cov_subset="SR1" > 1.0 </covariance>
+    <covariance region="SR1_2018A" cov_subset="SR1"> 0.0 </covariance>
+    <covariance region="SR1_2018B" cov_subset="SR1" > 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR1_2018A">
+    <nobs>5</nobs>
+    <nb>7.3</nb>
+    <deltanb>3.5</deltanb>
+    <covariance region="SR1_2017" cov_subset="SR1"> 0.0 </covariance>
+    <covariance region="SR1_2018A" cov_subset="SR1"> 1.0 </covariance>
+    <covariance region="SR1_2018B" cov_subset="SR1"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR1_2018B">
+    <nobs>11</nobs>
+    <nb>10.3</nb>
+    <deltanb>5.4</deltanb>
+    <covariance region="SR1_2017" cov_subset="SR1"> 0.0 </covariance>
+    <covariance region="SR1_2018A" cov_subset="SR1"> 0.0 </covariance>
+    <covariance region="SR1_2018B" cov_subset="SR1" > 1.0 </covariance>
+  </region>
+
+
+<region type="signal" id="SR2_2017">
+    <nobs>4</nobs>
+    <nb>2.1</nb>
+    <deltanb>0.7</deltanb>
+    <covariance region="SR2_2017" cov_subset="SR2" > 1.0 </covariance>
+    <covariance region="SR2_2018A" cov_subset="SR2" > 0.0 </covariance>
+    <covariance region="SR2_2018B" cov_subset="SR2" > 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR2_2018A">
+    <nobs>0</nobs>
+    <nb>0.6</nb>
+    <deltanb>0.3</deltanb>
+    <covariance region="SR2_2017" cov_subset="SR2" > 0.0 </covariance>
+    <covariance region="SR2_2018A" cov_subset="SR2"  > 1.0 </covariance>
+    <covariance region="SR2_2018B" cov_subset="SR2" > 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR2_2018B">
+    <nobs>2</nobs>
+    <nb>1.0</nb>
+    <deltanb>0.3</deltanb>
+    <covariance region="SR2_2017" cov_subset="SR2" > 0.0 </covariance>
+    <covariance region="SR2_2018A" cov_subset="SR2" > 0.0 </covariance>
+    <covariance region="SR2_2018B" cov_subset="SR2" > 1.0 </covariance>
+  </region>
+
+
+<region type="signal" id="SR3_2015">
+    <nobs>1</nobs>
+    <nb>0.1</nb>
+    <deltanb>0.1</deltanb>
+    <covariance region="SR3_2015" cov_subset="SR3"> 1.0 </covariance>
+    <covariance region="SR3_2016A" cov_subset="SR3" > 0.0 </covariance>
+    <covariance region="SR3_2016B" cov_subset="SR3" > 0.0 </covariance>
+    <covariance region="SR3_2017" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018B" cov_subset="SR3"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2016A">
+    <nobs>2</nobs>
+    <nb>2.4</nb>
+    <deltanb>0.6</deltanb>
+    <covariance region="SR3_2015" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016A" cov_subset="SR3"> 1.0 </covariance>
+    <covariance region="SR3_2016B" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2017" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018B" cov_subset="SR3"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2016B">
+    <nobs>4</nobs>
+    <nb>4.0</nb>
+    <deltanb>1.1</deltanb>
+     <covariance region="SR3_2015" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016B" cov_subset="SR3"> 1.0 </covariance>
+    <covariance region="SR3_2017" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018B" cov_subset="SR3"> 0.0 </covariance>
+  </region>
+
+
+<region type="signal" id="SR3_2017">
+    <nobs>6</nobs>
+    <nb>6.7</nb>
+    <deltanb>1.3</deltanb>
+     <covariance region="SR3_2015" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016B" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2017" cov_subset="SR3"> 1.0 </covariance>
+    <covariance region="SR3_2018A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018B" cov_subset="SR3"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2018A">
+    <nobs>2</nobs>
+    <nb>1.8</nb>
+    <deltanb>0.6</deltanb>
+     <covariance region="SR3_2015" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016B" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2017" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018A" cov_subset="SR3"> 1.0 </covariance>
+    <covariance region="SR3_2018B" cov_subset="SR3"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2018B">
+    <nobs>1</nobs>
+    <nb>5.7</nb>
+    <deltanb>1.3</deltanb>
+     <covariance region="SR3_2015" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2016B" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2017" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018A" cov_subset="SR3"> 0.0 </covariance>
+    <covariance region="SR3_2018B" cov_subset="SR3"> 1.0 </covariance>
+  </region>
+
+<region type="signal" id="SR1_2017_dR">
+    <nobs>17</nobs>
+    <nb>12.2</nb>
+    <deltanb>4.8</deltanb>
+    <covariance region="SR1_2017_dR" cov_subset="SR1_dR" > 1.0 </covariance>
+    <covariance region="SR1_2018A_dR" cov_subset="SR1_dR"> 0.0 </covariance>
+    <covariance region="SR1_2018B_dR" cov_subset="SR1_dR" > 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR1_2018A_dR">
+    <nobs>5</nobs>
+    <nb>7.3</nb>
+    <deltanb>3.5</deltanb>
+    <covariance region="SR1_2017_dR" cov_subset="SR1_dR"> 0.0 </covariance>
+    <covariance region="SR1_2018A_dR" cov_subset="SR1_dR"> 1.0 </covariance>
+    <covariance region="SR1_2018B_dR" cov_subset="SR1_dR"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR1_2018B_dR">
+    <nobs>11</nobs>
+    <nb>10.3</nb>
+    <deltanb>5.4</deltanb>
+    <covariance region="SR1_2017_dR" cov_subset="SR1_dR"> 0.0 </covariance>
+    <covariance region="SR1_2018A_dR" cov_subset="SR1_dR"> 0.0 </covariance>
+    <covariance region="SR1_2018B_dR" cov_subset="SR1_dR" > 1.0 </covariance>
+  </region>
+
+
+<region type="signal" id="SR2_2017_dR">
+    <nobs>4</nobs>
+    <nb>2.1</nb>
+    <deltanb>0.7</deltanb>
+    <covariance region="SR2_2017_dR" cov_subset="SR2_dR" > 1.0 </covariance>
+    <covariance region="SR2_2018A_dR" cov_subset="SR2_dR" > 0.0 </covariance>
+    <covariance region="SR2_2018B_dR" cov_subset="SR2_dR" > 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR2_2018A_dR">
+    <nobs>0</nobs>
+    <nb>0.6</nb>
+    <deltanb>0.3</deltanb>
+    <covariance region="SR2_2017_dR" cov_subset="SR2_dR" > 0.0 </covariance>
+    <covariance region="SR2_2018A_dR" cov_subset="SR2_dR"  > 1.0 </covariance>
+    <covariance region="SR2_2018B_dR" cov_subset="SR2_dR" > 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR2_2018B_dR">
+    <nobs>2</nobs>
+    <nb>1.0</nb>
+    <deltanb>0.3</deltanb>
+    <covariance region="SR2_2017_dR" cov_subset="SR2_dR" > 0.0 </covariance>
+    <covariance region="SR2_2018A_dR" cov_subset="SR2_dR" > 0.0 </covariance>
+    <covariance region="SR2_2018B_dR" cov_subset="SR2_dR" > 1.0 </covariance>
+  </region>
+
+
+<region type="signal" id="SR3_2015_dR">
+    <nobs>1</nobs>
+    <nb>0.1</nb>
+    <deltanb>0.1</deltanb>
+    <covariance region="SR3_2015_dR" cov_subset="SR3_dR"> 1.0 </covariance>
+    <covariance region="SR3_2016A_dR" cov_subset="SR3_dR" > 0.0 </covariance>
+    <covariance region="SR3_2016B_dR" cov_subset="SR3_dR" > 0.0 </covariance>
+    <covariance region="SR3_2017_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2016A_dR">
+    <nobs>2</nobs>
+    <nb>2.4</nb>
+    <deltanb>0.6</deltanb>
+    <covariance region="SR3_2015_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016A_dR" cov_subset="SR3_dR"> 1.0 </covariance>
+    <covariance region="SR3_2016B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2017_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2016B_dR">
+    <nobs>4</nobs>
+    <nb>4.0</nb>
+    <deltanb>1.1</deltanb>
+     <covariance region="SR3_2015_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016B_dR" cov_subset="SR3_dR"> 1.0 </covariance>
+    <covariance region="SR3_2017_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+  </region>
+
+
+<region type="signal" id="SR3_2017_dR">
+    <nobs>6</nobs>
+    <nb>6.7</nb>
+    <deltanb>1.3</deltanb>
+     <covariance region="SR3_2015_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2017_dR" cov_subset="SR3_dR"> 1.0 </covariance>
+    <covariance region="SR3_2018A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2018A_dR">
+    <nobs>2</nobs>
+    <nb>1.8</nb>
+    <deltanb>0.6</deltanb>
+     <covariance region="SR3_2015_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2017_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018A_dR" cov_subset="SR3_dR"> 1.0 </covariance>
+    <covariance region="SR3_2018B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+  </region>
+
+<region type="signal" id="SR3_2018B_dR">
+    <nobs>1</nobs>
+    <nb>5.7</nb>
+    <deltanb>1.3</deltanb>
+     <covariance region="SR3_2015_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2016B_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2017_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018A_dR" cov_subset="SR3_dR"> 0.0 </covariance>
+    <covariance region="SR3_2018B_dR" cov_subset="SR3_dR"> 1.0 </covariance>
+  </region>
+
+</analysis>

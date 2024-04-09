@@ -1,0 +1,26 @@
+#<><><><><><><><><><><><><><><><><><><><><><><><><>
+#                                                <>
+#   SFS Card without smearing                    <>
+#                                                <>
+#   For use with CMS_EXO_19_010			 <>
+#   			                         <>
+#						 <>
+#   Based on MadAnalysis 5 v1.9                  <>
+#                                                <>
+#<><><><><><><><><><><><><><><><><><><><><><><><><>
+
+# Set FastJet variables
+
+set main.fastsim.package = fastjet
+set main.fastsim.algorithm = antikt
+set main.fastsim.radius = 0.4
+set main.fastsim.bjet_id.matching_dr = 0.3
+set main.fastsim.bjet_id.exclusive = true
+set main.fastsim.exclusive_id = false
+set main.fastsim.ptmin = 20.0
+set main.fastsim.jetrecomode = jets
+set main.fastsim.track_isocone_radius = 0.3,0.5
+
+
+
+
