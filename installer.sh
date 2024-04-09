@@ -39,7 +39,7 @@ if echo "$answer" | grep -iq "^y" ;then
 	cd $homeDIR
 	cd ./MG5/bin;
 	echo "[installer] installing HepMC, LHAPDF6 and Pythia8 under MadGraph5"
-    echo "install hepmc\ninstall lhapdf6\ninstall pythia8\nexit\n" > mad_install.txt;
+    echo "install hepmc\ninstall lhapdf6\ninstall pythia8\ninstall MadAnalysis5\nexit\n" > mad_install.txt;
 	./mg5_aMC -f mad_install.txt
 	cd $homeDIR
     rm $madgraph;
