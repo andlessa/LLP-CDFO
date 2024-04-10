@@ -1,16 +1,20 @@
 #!/bin/bash
 
 #Simples BASH script to read MG5 results generated from runScanMG5_hepmc.py, and generate .ma5 input files for MadAnalysis5 scripted runs. Might be replaced by python implementation
-#Usage: ./generate_ma5.sh MG5_proc_dir output_dir
+#Usage: ./generate_ma5.sh MG5_proc_dir output_dir [recasting_Card_path MA5_output_path]
 
 echo -e "Starting to parse MG5 outputs... "
 
 procDIR=${1:-.};
 outpath=${2:-.};
 recast_card_path=${3:-../MA5_input/recasting_card.dat}
+MA5outpath=${4:-~/MA5_outputs}
 
-if ! [[ -d $outpath ]]; then # Check if output directory exists; if not, creates it
+if ! [[ -d $outpath ]]; then # Check if output directories exist; if not, creates them
 	mkdir -p $outpath
+	fi
+if ! [[ -d $MA5outpath ]]; then
+	mkdir -p $MA5outpath
 	fi
 
 outputs=()
@@ -28,7 +32,7 @@ for path in $(for name in $(find ${procDIR} -name '*.hepmc.*' | sort); do readli
 done
 
 for file in ${outputs[@]}; do
-	echo -e "submit /data/01/lucasmdr/cms_exo_19_010/outputs/$(basename ${file} | sed -r 's/.ma5//g')" >> ${file}; # Each (name).ma5 will generate a (name) output dir
+	echo -e "submit ${MA5outpath}/$(basename ${file} | sed -r 's/.ma5//g')" >> ${file}; # Each (name).ma5 will generate a (name) output dir
 done
 echo -e "Finished!"
 
