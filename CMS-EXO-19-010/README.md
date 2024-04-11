@@ -30,7 +30,7 @@ and checking if the corresponding printed line shows "\[OK\]" status after compi
 MA5:      - PADForSFS                [OK]
 ```
 
-The PADForSFS source files are located by default in `(MA5_path)/tools/PADForSFS/SampleAnalyzer/User/Analyzer`. Replace the `cms_exo_19_010.[cpp/h/info]` files there with the corresponding ones in the `MA5_input/` folder in this directory (backup the original files beforehand if needed, but they are available in the [PAD](https://madanalysis.irmp.ucl.ac.be/wiki/PublicAnalysisDatabase)).
+The PADForSFS source files are located by default in `(MA5_path)/tools/PADForSFS/Build/SampleAnalyzer/User/Analyzer`. Replace the `cms_exo_19_010.[cpp/h/info]` files there with the corresponding ones in the `MA5_input/` folder in this directory (backup the original files beforehand if needed, but they are available in the [PAD](https://madanalysis.irmp.ucl.ac.be/wiki/PublicAnalysisDatabase)).
 
 To run a Madanalysis5 job, use:
 ```bash
