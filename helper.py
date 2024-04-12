@@ -223,7 +223,7 @@ def getHSCPCandidates(llps):
 
     return candidates
 
-def getModelDict(inputFile,model,verbose=True):
+def getModelDict(inputFile,model,verbose=True,bannerFile=None):
 
     if model == 'ewk':
         LLP = 1000022
@@ -246,11 +246,12 @@ def getModelDict(inputFile,model,verbose=True):
         print('File %s not found' %f)
         raise OSError()
     parsDict = {}    
-    for banner in glob.glob(os.path.join(os.path.dirname(f),'*banner*txt')):
-        with open(banner,'r') as ff:
-            slhaData = ff.read().split('<slha>')[1].split('</slha>')[0]
-            slhaData = pyslha.readSLHA(slhaData)
-                
+    if bannerFile is None:
+        bannerFile = list(glob.glob(os.path.join(os.path.dirname(f),'*banner*txt')))[0]
+    with open(bannerFile,'r') as ff:
+        slhaData = ff.read().split('<slha>')[1].split('</slha>')[0]
+        slhaData = pyslha.readSLHA(slhaData)
+            
     parsDict = {}
     parsDict['mLLP'] = slhaData.blocks['MASS'][LLP]
     parsDict['mLSP'] = slhaData.blocks['MASS'][LSP]
