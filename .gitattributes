@@ -1,2 +1,3 @@
 eventData/cdfo_808.00_800.00_tau_9.81e-01_delphes_events.root filter=lfs diff=lfs merge=lfs -text
 eventData/cdfo_481.38_450.00_tau_2.85e-02_delphes_events.root filter=lfs diff=lfs merge=lfs -text
+eventData/cdfo_481.38_450.00_tau_2.85e-02_cms_delphes_events.root filter=lfs diff=lfs merge=lfs -text
