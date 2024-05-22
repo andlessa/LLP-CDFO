@@ -1,5 +1,5 @@
 ## Data Files
 
 
-The data files containing the Delphes output and the MadGraph banner for each point of the CDFO scan are
-available at [CernBox](https://cernbox.cern.ch/s/ctEFgnm8ILTkMRW)
+The data files containing the necessary Delphes output and the MadGraph banners for the two benchmark points of the CDFO scan used for
+[plotting distributions](../plotting/distributions) can be downloaded [here](https://cernbox.cern.ch/s/7L6tjQ2FH1C8dIC).
