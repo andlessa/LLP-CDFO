@@ -1,0 +1,5 @@
+set main.currentdir = /home/lucasmdr
+set main.recast = on
+set main.recast.store_root = False
+set main.recast.card_path = /home/lucasmdr/run_dir/madanalysis5/MA5_input/recasting_card.dat
+import /data/01/lucasmdr/MG5_aMC_v3_5_2/scripts/runs/pp2BB1j_test_scan_fhep3/Events/run_70/cdfo_808.00_800_tau_1e+00_pythia8_events.hepmc.gz as cdfo_808p00_800
