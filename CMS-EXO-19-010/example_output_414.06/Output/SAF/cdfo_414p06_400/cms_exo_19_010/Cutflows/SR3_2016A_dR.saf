@@ -1,0 +1,152 @@
+<SAFheader>
+</SAFheader>
+
+<InitialCounter>
+"Initial number of events"      #
+65519           0               # nentries
+1.149475e+05    0.000000e+00    # sum of weights
+2.016657e+05    0.000000e+00    # sum of weights^2
+</InitialCounter>
+
+<Counter>
+"OneGoodJet"                    # 1st cut
+15154           0               # nentries
+2.658641e+04    0.000000e+00    # sum of weights
+4.664360e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+"JetAngleCuts"                  # 2st cut
+10699           0               # nentries
+1.877049e+04    0.000000e+00    # sum of weights
+3.293123e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+"|Delta phi(leading jet, pTmiss)| > 0.5"# 3st cut
+10699           0               # nentries
+1.877049e+04    0.000000e+00    # sum of weights
+3.293123e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with |eta| < 2.1"    # 4st cut
+10699           0               # nentries
+1.877049e+04    0.000000e+00    # sum of weights
+3.293123e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with p_T > 55"       # 5st cut
+10404           0               # nentries
+1.825294e+04    0.000000e+00    # sum of weights
+3.202323e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track passing fiducial selections"# 6st cut
+9271            0               # nentries
+1.626518e+04    0.000000e+00    # sum of weights
+2.853588e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with relative isolation"# 7st cut
+8812            0               # nentries
+1.545991e+04    0.000000e+00    # sum of weights
+2.712309e+04    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with > 3 or 4 pixel hits"# 8st cut
+354             0               # nentries
+6.210630e+02    0.000000e+00    # sum of weights
+1.089602e+03    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with no missing inner/middle hits"# 9st cut
+352             0               # nentries
+6.175541e+02    0.000000e+00    # sum of weights
+1.083446e+03    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with d0 < 0.2 mm"    # 10st cut
+352             0               # nentries
+6.175541e+02    0.000000e+00    # sum of weights
+1.083446e+03    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with dz < 5.0 mm"    # 11st cut
+352             0               # nentries
+6.175541e+02    0.000000e+00    # sum of weights
+1.083446e+03    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with DR(track,daughter)>0.2"# 12st cut
+340             0               # nentries
+5.965012e+02    0.000000e+00    # sum of weights
+1.046511e+03    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with DR(track, jet) > 0.5."# 13st cut
+316             0               # nentries
+5.543952e+02    0.000000e+00    # sum of weights
+9.726394e+02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with DR(track, electron) > 0.15."# 14st cut
+315             0               # nentries
+5.526408e+02    0.000000e+00    # sum of weights
+9.695614e+02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with DR(track, muon) > 0.15."# 15st cut
+312             0               # nentries
+5.473775e+02    0.000000e+00    # sum of weights
+9.603275e+02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with DR(track, tau) > 0.15."# 16st cut
+312             0               # nentries
+5.473775e+02    0.000000e+00    # sum of weights
+9.603275e+02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with Ecalo < 10."    # 17st cut
+228             0               # nentries
+4.000067e+02    0.000000e+00    # sum of weights
+7.017778e+02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">=1 track with >=3 missing outer hits."# 18st cut
+228             0               # nentries
+4.000067e+02    0.000000e+00    # sum of weights
+7.017778e+02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+">5 Layers 2016."               # 19st cut
+7               0               # nentries
+1.228091e+01    0.000000e+00    # sum of weights
+2.154581e+01    0.000000e+00    # sum of weights^2
+</Counter>
+
+<Counter>
+"Reweight 2016A."               # 20st cut
+7               0               # nentries
+7.260079e-01    0.000000e+00    # sum of weights
+7.529822e-02    0.000000e+00    # sum of weights^2
+</Counter>
+
+<SAFfooter>
+</SAFfooter>
