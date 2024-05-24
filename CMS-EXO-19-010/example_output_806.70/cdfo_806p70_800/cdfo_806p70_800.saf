@@ -1,0 +1,19 @@
+<SAFheader>
+</SAFheader>
+
+<SampleGlobalInfo>
+# xsection     xsection_error nevents        sum_weight+    sum_weight-    
+2.067953e-02   0.000000e+00   74067          0.000000e+00   0.000000e+00   
+</SampleGlobalInfo>
+
+<FileInfo>
+"/data/01/lucasmdr/MG5_aMC_v3_5_2/scripts/runs/pp2BB1j_test_scan_fhep3/Events/run_69/cdfo_806.70_800_tau_2e+00_pythia8_events.hepmc.gz" # file 1 / 1
+</FileInfo>
+
+<SampleDetailedInfo>
+# xsection     xsection_error nevents        sum_weight+    sum_weight-    
+2.067953e-02   0.000000e+00   74067          0.000000e+00   0.000000e+00    # file 1 / 1
+</SampleDetailedInfo>
+
+<SAFfooter>
+</SAFfooter>
