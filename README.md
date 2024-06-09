@@ -1,6 +1,6 @@
 # LLP-CDFO
 
-Holds the code and data for reproducing the results in the [Probing conversion-driven freeze-out at the LHC](https://arxiv.org/abs/2404.16086).
+Holds the code and data for reproducing the results in the [Probing conversion-driven freeze-out at the LHC](https://arxiv.org/abs/2404.16086) paper.
 
 
 
@@ -29,7 +29,7 @@ Below we describe the main files and folders stored in this repository.
 * Folders:
 
   * [ATLAS-SUSY-2016-08](ATLAS-SUSY-2016-08), [ATLAS-SUSY-2018-13](ATLAS-SUSY-2018-13), [ATLAS-SUSY-2018-42](ATLAS-SUSY-2018-42), [CMS-EXO-19-010](CMS-EXO-19-010) and  [CMS-EXO-20-004](CMS-EXO-20-004): folders containing the relevant recasting code for each analysis (except for CMS-EXO-19-010 which relies on MadAnalysis5)
-  * [statisticalTools](statisticalTools): folder with statistical tools used for computing limits
+  * [statisticalTools](statisticalTools): folder with statistical tools used for computing limits and the high luminosity projections
   * [Cards](Cards): relevant cards for event generation
   * [plotting](plotting): folder containing all the plotting notebooks.
   * [results_dataFrames](results_dataFrames): folder with pickle files containing Pandas DataFrames with the recasting results (see below)
@@ -57,7 +57,7 @@ The recasting of the following searches have been used to compute the LHC constr
  * [ATLAS-SUSY-2016-08](https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/PAPERS/SUSY-2016-08/): ATLAS Displaced Vertex plus MET search
  * [ATLAS-SUSY-2018-13](https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/PAPERS/SUSY-2018-13/): ATLAS Displaced Vertex plus jets search
  * [ATLAS-SUSY-2018-42](https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/PAPERS/SUSY-2018-42/): ATLAS dE/dx (HSCP) search
- * [CMS-EXO-19-010](https://cms-results.web.cern.ch/cms-results/public-results/publications/EXO-19-010/): CMS disappearing tracksearch
+ * [CMS-EXO-19-010](https://cms-results.web.cern.ch/cms-results/public-results/publications/EXO-19-010/): CMS disappearing track search
  * [CMS-EXO-20-004](https://cms-results.web.cern.ch/cms-results/public-results/publications/EXO-20-004/): CMS jets plus MET prompt search
 
 Each recast folder contains the following structure:
@@ -73,7 +73,7 @@ The only exception is the recasting of the disappearing track search ([CMS-EXO-1
 
 ### Pipeline for running the recasting
 
-Detailed information for how to run each recasting code can be obtaining running the main recast code with `--help` flag. Below we schematically list the main steps required for reproducing the results in [Probing conversion-driven freeze-out at the LHC](https://arxiv.org/abs/2404.16086):
+Detailed information for how to run each recasting code can be obtaining running the main recast code with the `--help` flag. Below we schematically list the main steps required for reproducing the results in [Probing conversion-driven freeze-out at the LHC](https://arxiv.org/abs/2404.16086):
 
  1. Generate MC events and the Delphes ROOT output  for the model points running:
 
