@@ -36,3 +36,10 @@ def get_entries(root):
 		nevents.append(re.search(r'(\d+).*#\s+nentries.*', entry.text).group(1))
 	return nevents
 
+def get_weights(root):
+	nweights=[]
+	for entry in root.iter("InitialCounter"):
+		nweights.append(re.search(r'(\d\.\d+e.\d+).*#\s+sum of weights', entry.text).group(1))
+	for entry in root.iter("Counter"):
+		nweights.append(re.search(r'(\d\.\d+e.\d+).*#\s+sum of weights', entry.text).group(1))
+	return nweights

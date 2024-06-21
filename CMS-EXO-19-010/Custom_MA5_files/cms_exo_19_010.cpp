@@ -4,7 +4,9 @@
   -- arXiv:2004.05153  
   Recast By Mark Goodsell (goodsell@lpthe.jussieu.fr) 
   -- arXiv:2106.08815  
-  
+
+  CDFO Customization By Lucas Magno D. Ramos (lucasmdr@if.usp.br)
+  -- arXiv:2404.16086
 */ 
 
 
@@ -730,8 +732,6 @@ bool cms_exo_19_010::Initialize(const MA5::Configuration& cfg, const std::map<st
   cout << "-- By Mark Goodsell (goodsell@lpthe.jussieu.fr) --" << std::endl;
   cout << "--------------------------------------------------" <<std::endl;
   this->engine = std::mt19937(time(NULL));
-  //    std::string preliminary[] ={"Njets25 >=2","1 signal lepton","Second baseline lepton veto","mT>50","ET>180","Njets <=3","2 bjets","mbb>50","ET>240","mbb"};
-    //const std::vector<std::string> allSRs={"SR1_2017","SR1_2018A","SR1_2018B","SR2_2017","SR2_2018A","SR2_2018B","SR3_2017","SR3_2018A","SR3_2018B"};
 
   
   const std::vector<std::string> vecallSRs={"SR3_2015","SR3_2016A","SR3_2016B","SR1_2017","SR1_2018A","SR1_2018B","SR2_2017","SR2_2018A","SR2_2018B","SR3_2017","SR3_2018A","SR3_2018B",
@@ -747,11 +747,7 @@ bool cms_exo_19_010::Initialize(const MA5::Configuration& cfg, const std::map<st
 
     std::string alldRs[]={"SR3_2015_dR","SR3_2016A_dR","SR3_2016B_dR","SR1_2017_dR","SR1_2018A_dR","SR1_2018B_dR","SR2_2017_dR","SR2_2018A_dR","SR2_2018B_dR","SR3_2017_dR","SR3_2018A_dR","SR3_2018B_dR"};
 
-    /*
-    std::string allSR1[]={"SR1_2017","SR1_2018A","SR1_2018B"};
-    std::string allSR2[]={"SR2_2017","SR2_2018A","SR2_2018B"};
-    std::string allSR3[]={"SR3_2017","SR3_2018A","SR3_2018B"};
-    */
+    std::string all2015[]={"SR3_2015","SR3_2015_dR"};
     
     std::string all2016[]={"SR3_2016A","SR3_2016B"};
     std::string all2016dR[]={"SR3_2016A_dR","SR3_2016B_dR"};
@@ -776,8 +772,7 @@ bool cms_exo_19_010::Initialize(const MA5::Configuration& cfg, const std::map<st
 
  
 
-    Manager()->AddCut("MET2015","SR3_2015");
-    Manager()->AddCut("MET2015","SR3_2015_dR");
+    Manager()->AddCut("MET2015",all2015);
     Manager()->AddCut("MET",allSRs2);
 
     Manager()->AddCut("OneGoodJet",allSRs);
@@ -788,9 +783,9 @@ bool cms_exo_19_010::Initialize(const MA5::Configuration& cfg, const std::map<st
     Manager()->AddCut(">=1 track with |eta| < 2.1",allSRs);
     Manager()->AddCut(">=1 track with p_T > 55",allSRs);
     Manager()->AddCut(">=1 track passing fiducial selections",allSRs);
+    Manager()->AddCut(">=1 track with relative isolation",allSRs);
     Manager()->AddCut(">=1 track with > 3 or 4 pixel hits",allSRs);
     Manager()->AddCut(">=1 track with no missing inner/middle hits",allSRs);
-    Manager()->AddCut(">=1 track with relative isolation",allSRs);
     Manager()->AddCut(">=1 track with d0 < 0.2 mm",allSRs);
     Manager()->AddCut(">=1 track with dz < 5.0 mm",allSRs);
 
@@ -814,7 +809,6 @@ bool cms_exo_19_010::Initialize(const MA5::Configuration& cfg, const std::map<st
 
     Manager()->AddCut(">5 Layers 2015","SR3_2015");
     Manager()->AddCut(">5 Layers 2015.","SR3_2015_dR");
-    //    Manager()->AddCut(">5 Layers 2016","SR3_2016");
     Manager()->AddCut(">5 Layers 2016",all2016);
     Manager()->AddCut(">5 Layers 2016.",all2016dR);
 
@@ -906,20 +900,6 @@ bool cms_exo_19_010::Execute(SampleFormat& sample, const EventFormat& event)
   std::vector<const RecTrackFormat*> charginos;
 
   // Count signal electrons, muons, jets etc 
-														
-//-----------------------------------------------DEBUG FILE OPTIONS---------------------------------------------
-/*  ofstream myfile, trackfile, chdau_cut, new_counter;
-  myfile.open("/home/lucasmdr/check_stable_cone_MCP.txt", ios_base::app);
-  trackfile.open("/home/lucasmdr/check_isolation_cone_MCP.txt", ios_base::app);
-  chdau_cut.open("/home/lucasmdr/check_chdau_cut.txt", ios_base::app);
-  ifstream counter;
-  counter.open("/home/lucasmdr/counter.txt");
-  int eventnumber; //Needed to count events to match with hepmc file for debugging. Needs to read from ifstream, close, and open again with ofstream to update.
-  counter >> eventnumber;
-  counter.close();
-  new_counter.open("/home/lucasmdr/counter.txt");*/
-//---------------------------------------------DEBUG FILE OPTIONS-----------------------------------------------
-														
 
 static std::uniform_real_distribution<double> rd(0.0,1.0);
 bool chargino50=false;
@@ -940,28 +920,6 @@ MALorentzVector charginop;
 double maxtrackpt=0.0;
 double chpt=0.0;
 
-// Now need to fill up the candidate charged tracks ...
-//---------------------------------------DEBUG------------------------------------------
-											
-/*  int count=0;
-  myfile << "EVENT ID: "<< eventnumber << endl;
-  new_counter << eventnumber+1;
-  if (eventnumber < 1000){
-  	for(auto track : event.rec()->tracks()){
-		const MCParticleFormat* part = track.mc();
-		MALorentzVector vdec = part->decay_vertex(), vprod = track.ProductionVertex();
-		myfile << "Track PID: " << part->pdgid() << " Track # "<< count <<"     Track Status: " << part->statuscode() << endl;
-		myfile << "Decay Vertex Coord ("<<vdec.X() <<","<<vdec.Y() <<","<< vdec.Z()<<","<<vdec.T() <<")" << endl;
-		myfile << "Prod. Vertex Coord ("<<vprod.X() <<","<<vprod.Y() <<","<< vprod.Z()<<","<<vprod.T() <<")" << endl;
-		myfile << endl;
-		count++;
-	}
-  }
-  myfile << endl;
-  count = 0;
-  if (eventnumber>1000) return false;*/
-											
-//----------------------------------------DEBUG END-------------------------------------
 
  for(auto &track : event.rec()->tracks()) 
   {
@@ -1213,6 +1171,28 @@ double chpt=0.0;
  
     trackfiducial=true; 
  
+												
+//----------------------------MOD. ISOLATION CALC.----------------------------------------------
+    MALorentzVector cprod = chargino->p->ProductionVertex();
+    MAfloat32 pv_ssum=0.0, debug_psum=0.0;
+    //trackfile << "Event ID: " << eventnumber-1 << endl;
+
+    //Trying to reconstruct results using MCParticles instead of RecTracks, to try to match the isocones number
+    for (auto part : event.mc()->particles()){
+    	MAbool is_charged = PDG->IsCharged(part.pdgid());
+	if (chargino->p->dr(part) < 0.3 && part.statuscode()==1 && !(PHYSICS->Id->IsInvisible(part)) ){ //Maybe should relax statuscode? But would interfere with prop. partons, better leave as is.
+		MALorentzVector vprod = part.mothers()[0]->decay_vertex();
+		if (vprod.X()<0.01 && vprod.Y()<0.01 && vprod.Z()<0.01) {pv_ssum+=part.momentum().Pt();} //Obs: No definition of displaced in this search, using 0.01mm, according to vertex resolution
+		if (part.d0() < 0.2 && part.dz() < 5) {debug_psum+=part.momentum().Pt();}
+	}												 //for each coordinate from reconstruction (https://arxiv.org/pdf/1405.6569)
+    }
+    double isopt = abs(pv_ssum); //Modified from the original to only include contributions coming from the Primary Vertex, no displaced tracks/particles.
+    if( (isopt/chargino->Pt()) > 0.05) {delete chargino; continue;}; 
+ 
+    trackisolation=true; 
+
+//--------------------------END MOD. ISOLATION CALC.--------------------------------------------
+    												
  
     // Now we have >=1 track with > 3 or 4 pixel hits, actually this means we have to have all 4 closest hits 
  
@@ -1260,23 +1240,6 @@ double chpt=0.0;
     if(!charginoinnermiddle) {delete chargino; continue;}; 
  
     trackinnermiddle=true; 
-												
-//----------------------------MOD. ISOLATION CALC.----------------------------------------------
-    MALorentzVector cprod = chargino->p->ProductionVertex();
-    MAfloat32 pv_ssum=0.0;
-    //trackfile << "Event ID: " << eventnumber-1 << endl;
-
-    //Trying to reconstruct results using MCParticles instead of RecTracks, to try to match the isocones number
-    for (auto part : event.mc()->particles()){
-    	MAbool is_charged = PDG->IsCharged(part.pdgid());
-	if (chargino->p->dr(part) < 0.3 && part.statuscode()==1 && !(PHYSICS->Id->IsInvisible(part)) ){ //Maybe should relax statuscode? But would interfere with prop. partons, better leave as is.
-		MALorentzVector vprod = part.mothers()[0]->decay_vertex();
-//		if (vprod.X()==0 && vprod.Y()==0 && vprod.Z()==0 && vprod.T()==0) {pv_ssum+=part.momentum().Pt();} //Revise with the definition of displaced for this search; must be some buffer.
-		if (vprod.X()<0.01 && vprod.Y()<0.01 && vprod.Z()<0.01) {pv_ssum+=part.momentum().Pt();} //Obs: No definition of displaced in this search, using 0.01mm, according to vertex resolution
-	}												 //for each coordinate from reconstruction (https://arxiv.org/pdf/1405.6569)
-    }
-//--------------------------END MOD. ISOLATION CALC.--------------------------------------------
-    												
 
 												
 //-----------------------------DR CHARGED DAU CUT--------------------------------------------
@@ -1287,7 +1250,6 @@ double chpt=0.0;
 	if (abs(part.pdgid())==5){
 		MALorentzVector vprod = part.mothers()[0]->decay_vertex(), vdec = part.decay_vertex();
 		if (LV_equal(vprod,cdec) && part.pt()>1.0){
-			//if (LV_equal(trk.ProductionVertex(),trk.mc()->decay_vertex())) continue;
 			if (chargino->p->dr(part) < 0.2){chargino->chdau_iso = false; break;}
 		}
 	}
@@ -1295,14 +1257,7 @@ double chpt=0.0;
 
 //-----------------------------END DR CHARGED DAU CUT----------------------------------------
 												
-    double isopt = abs(pv_ssum); //Modified from the original to only include contributions coming from the Primary Vertex, no displaced tracks/particles.
-    //double isopt=fabs(chargino->p->isolCones()[0].sumPT());
-    //double isopt=chargino->p->isolCones()[0].sumPT()-chargino->Pt(); // MA5 isolation includes its own ...
-    //double isopt = sumpTisolation(chargino->p->momentum(),Event,0.3);  
 
-    if( (isopt/chargino->Pt()) > 0.05) {delete chargino; continue;}; 
- 
-    trackisolation=true; 
      
     double absd0=fabs(chargino->p->d0());
     double absdz=fabs(chargino->p->dz());
@@ -1312,7 +1267,6 @@ double chpt=0.0;
     if(absdz > 5.0) {delete chargino; continue;}; 
     trackdz=true; 
 
-    //if(!chdau_iso) {delete chargino; continue;}
  
     tracks2.push_back(chargino); 
   } 
@@ -1320,9 +1274,9 @@ double chpt=0.0;
    if(!(Manager()->ApplyCut(tracketa,">=1 track with |eta| < 2.1"))) return true; 
    if(!(Manager()->ApplyCut(trackpT,">=1 track with p_T > 55"))) return true; 
    if(!(Manager()->ApplyCut(trackfiducial,">=1 track passing fiducial selections"))) return true; 
+   if(!(Manager()->ApplyCut(trackisolation,">=1 track with relative isolation"))) return true; 
    if(!(Manager()->ApplyCut(trackpixel,">=1 track with > 3 or 4 pixel hits"))) return true; 
    if(!(Manager()->ApplyCut(trackinnermiddle,">=1 track with no missing inner/middle hits"))) return true; 
-   if(!(Manager()->ApplyCut(trackisolation,">=1 track with relative isolation"))) return true; 
    if(!(Manager()->ApplyCut(trackd0,">=1 track with d0 < 0.2 mm"))) return true; 
    if(!(Manager()->ApplyCut(trackdz,">=1 track with dz < 5.0 mm"))) return true; 
  
@@ -1351,8 +1305,6 @@ std::vector<charged_track*> fake_muons;
   for(auto chargino: tracks) 
   { 
     MALorentzVector vdec = chargino->p->mc()->decay_vertex(); 
-    //if((vdec.pT() > 4000.0) || (fabs(vdec.pz()) > 6000.0 )) {delete chargino; continue;} 
-    //if((vdec.pT() > 7000.0) || (fabs(vdec.pz()) > 11000.0 )) {delete chargino; continue;} 
     // if it decays outside muon chamber and is not hadronic (i.e. caught in the calo)
     if((!(PHYSICS->Id->IsHadronic(chargino->p->mc()))) &&( (vdec.Pt() > 7000.0) || (fabs(vdec.Pz()) > 11000.0 ))) 
     { 
@@ -1363,7 +1315,6 @@ std::vector<charged_track*> fake_muons;
       tracks3.push_back(chargino); 
     } 
   } 
-  //tracks=tracks3; 
   tracks=FullRemoval(tracks3,fake_muons,0.15); 
   for(auto fmu : fake_muons) 
   { 
@@ -1513,7 +1464,7 @@ bool trackmissingouter_dR=false;
 
         if(good2017) good2017_3=true; 
         
-        if(good2017 && chargino->chdau_iso) good2017_3=true; 
+        if(good2017 && chargino->chdau_iso) good2017_3dR=true;
         
         if(good2018) 
         { 
@@ -1542,7 +1493,6 @@ if((phipTmiss > -1.6) && (phipTmiss <-0.6)) GoodpTPhi=false;
  
  if(!(Manager()->ApplyCut(GoodpTPhi,"HEMVeto"))) return true; 
  if(!(Manager()->ApplyCut(GoodpTPhi,"HEMVeto."))) return true; 
-//if(!GoodpTPhi) return; 
  
  
  
@@ -1586,19 +1536,6 @@ for(auto track: tracks) {delete track;};
       if(!(Manager()->ApplyCut(true,rwghtname+period+"."))) return true;
    }
 
-     /*
- Manager()->SetCurrentEventWeight(myWeight*lumiratios["2015"]);
- if(!(Manager()->ApplyCut(true,"Reweight 2015"))) return true;
-
- Manager()->SetCurrentEventWeight(myWeight*lumiratios["2016A"]);
- if(!(Manager()->ApplyCut(true,"Reweight 2016A"))) return true;
-
- Manager()->SetCurrentEventWeight(myWeight*lumiratios["2016B"]);
- if(!(Manager()->ApplyCut(true,"Reweight 2016B"))) return true;
-
- Manager()->SetCurrentEventWeight(myWeight*lumiratios["2017"]);
- if(!(Manager()->ApplyCut(true,"Reweight 2016B"))) return true;
-     */
  
  return true; 
 
