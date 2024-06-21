@@ -14,7 +14,7 @@ with
 - **recasting\_Card\_path**: Path to the modified recasting_card.dat file specifying to run only the cms_exo_19_010 analysis. Default path is `../Custom_MA5_files/recasting_card.dat`
 - **MA5\_output\_path**: Path to the directory which will hold the results from the MadAnalysis5 jobs run from the generated `.ma5` inputs. Defaults to `~/MA5_outputs/`
 
-> [!CAUTION]
+> [CAUTION!]
 > Points are indexed by (%format msb)\_(%format mn1), so double-check the output names in runScanMG5\_hepmc.py beforehand to avoid overlaps. 
 
 ## Customizing the MA5 PADForSFS CMS-EXO-19-010 source for the analysis
