@@ -1,0 +1,13 @@
+{{{H0, H0, conj[H0], conj[H0]}, {(-2*I)*Lambda1, 1}}, 
+ {{H0, Hp, conj[H0], conj[Hp]}, {(-I)*Lambda1, 1}}, 
+ {{H0, ss1, ss1, conj[H0]}, {(-2*I)*LamH1, 1}}, 
+ {{H0, ss1, ss2, conj[H0]}, {(-I)*LamH12, 1}}, 
+ {{H0, ss2, ss2, conj[H0]}, {(-2*I)*LamH2, 1}}, 
+ {{Hp, Hp, conj[Hp], conj[Hp]}, {(-2*I)*Lambda1, 1}}, 
+ {{Hp, ss1, ss1, conj[Hp]}, {(-2*I)*LamH1, 1}}, 
+ {{Hp, ss1, ss2, conj[Hp]}, {(-I)*LamH12, 1}}, 
+ {{Hp, ss2, ss2, conj[Hp]}, {(-2*I)*LamH2, 1}}, 
+ {{ss1, ss1, ss1, ss1}, {(-24*I)*Lam14, 1}}, 
+ {{ss1, ss1, ss1, ss2}, {(-6*I)*Lam31, 1}}, {{ss1, ss1, ss2, ss2}, 
+  {(-4*I)*Lam22, 1}}, {{ss1, ss2, ss2, ss2}, {(-6*I)*Lam13, 1}}, 
+ {{ss2, ss2, ss2, ss2}, {(-24*I)*Lam24, 1}}}

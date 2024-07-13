@@ -1,0 +1,53 @@
+\section{Fields} 
+\subsection{Gauge Fields} 
+\begin{center} 
+\begin{tabular}{|c|c|c|c|} 
+\hline \hline 
+Name & \(SU(N)\) & Coupling & Name \\ 
+ \hline 
+\(B\) & \(U(1)\) & \(g_1\) &\text{hypercharge}\\ 
+\(W\) & \(\text{SU}(2)\) & \(g_2\) &\text{left}\\ 
+\(g\) & \(\text{SU}(3)\) & \(g_3\) &\text{color}\\ 
+\hline \hline
+\end{tabular} 
+\end{center} 
+\subsection{Matter Superfields} 
+\begin{center} 
+\begin{tabular}{|c|c|c|c|c|} 
+\hline \hline 
+Name & Spin  &  Generations & \((U(1)\otimes\, \text{SU}(2)\otimes\, \text{SU}(3))\) \\ 
+\hline 
+\(H\) & \(0\)  & 1 & \((\frac{1}{2},{\bf 2},{\bf 1}) \) \\ 
+\(\text{S1}\) & \(0\)  & 1 & \((0,{\bf 1},{\bf 1}) \) \\ 
+\(\text{S2}\) & \(0\)  & 1 & \((0,{\bf 1},{\bf 1}) \) \\ 
+\(q\) & \(\frac{1}{2}\)  & 3 & \((\frac{1}{6},{\bf 2},{\bf 3}) \) \\ 
+\(l\) & \(\frac{1}{2}\)  & 3 & \((-\frac{1}{2},{\bf 2},{\bf 1}) \) \\ 
+\(d\) & \(\frac{1}{2}\)  & 3 & \((\frac{1}{3},{\bf 1},{\bf \overline{3}}) \) \\ 
+\(u\) & \(\frac{1}{2}\)  & 3 & \((-\frac{2}{3},{\bf 1},{\bf \overline{3}}) \) \\ 
+\(e\) & \(\frac{1}{2}\)  & 3 & \((1,{\bf 1},{\bf 1}) \) \\ 
+\hline \hline
+\end{tabular} 
+\end{center} 
+\section{Lagrangian} 
+\subsection{Input Lagrangian for Eigenstates GaugeES} 
+\begin{align} 
+L = \, & -\frac{1}{2} m_{1}^2 S_{1}^{2} - \lambda_{14} S_{1}^{4} - \lambda_{31} S_{1}^{3} S_{2} -\frac{1}{2} m_{2}^2 S_{2}^{2} - \lambda_{22} S_{1}^{2} S_{2}^{2} - \lambda_{13} S_{1} S_{2}^{3} - \lambda_{24} S_{2}^{4} \nonumber \\ 
+ &- \mu^2 |H^0|^2 - \lambda_{H1} S_{1}^{2} |H^0|^2 - \lambda_{H12} S_{1} S_{2} |H^0|^2 - \lambda_{H2} S_{2}^{2} |H^0|^2 - \mu^2 |H^+|^2 \nonumber \\ 
+ &- \lambda_{H1} S_{1}^{2} |H^+|^2 - \lambda_{H12} S_{1} S_{2} |H^+|^2 - \lambda_{H2} S_{2}^{2} |H^+|^2 -\frac{1}{2} \lambda |H^0|^4 -\frac{1}{2} \lambda |H^+|^4 - H^+ \lambda |H^0|^2 H^- \nonumber \\ 
+ &- H^0 d^*_{L,{k \gamma}} Y^*_{d,{j k}} \delta_{\beta \gamma} d_{R,{j \beta}} - H^+ u^*_{L,{k \gamma}} Y^*_{d,{j k}} \delta_{\beta \gamma} d_{R,{j \beta}} - H^0 e^*_{L,{k}} Y^*_{e,{j k}} e_{R,{j}} \nonumber \\ 
+ &- H^+ \nu^*_{L,{k}} Y^*_{e,{j k}} e_{R,{j}} - H^- d^*_{L,{k \gamma}} Y^*_{u,{j k}} \delta_{\beta \gamma} u_{R,{j \beta}} +H^{0,*} u^*_{L,{k \gamma}} Y^*_{u,{j k}} \delta_{\beta \gamma} u_{R,{j \beta}} \nonumber \\ 
+ &- H^{0,*} d^*_{R,{j \beta}} \delta_{\beta \gamma} d_{L,{k \gamma}} Y_{d,{j k}} - H^- d^*_{R,{j \beta}} \delta_{\beta \gamma} u_{L,{k \gamma}} Y_{d,{j k}} - H^{0,*} e^*_{R,{j}} e_{L,{k}} Y_{e,{j k}} \nonumber \\ 
+ &- H^- e^*_{R,{j}} \nu_{L,{k}} Y_{e,{j k}} - H^+ u^*_{R,{j \beta}} \delta_{\beta \gamma} d_{L,{k \gamma}} Y_{u,{j k}} +H^0 u^*_{R,{j \beta}} \delta_{\beta \gamma} u_{L,{k \gamma}} Y_{u,{j k}} 
+\end{align} 
+\subsection{Gauge fixing terms} 
+\subsubsection{Gauge fixing terms for eigenstates {\tt 'GaugeES'} } 
+\begin{align} 
+L_{GF} = \, &-\frac{1}{2} |\partial_{\mu}B|^2 \xi_{B}^{-1}  -\frac{1}{2} |\partial_{\mu}g|^2 \xi_{g}^{-1}  -\frac{1}{2} |\partial_{\mu}W|^2 \xi_{W}^{-1} 
+\end{align} 
+\subsubsection{Gauge fixing terms for eigenstates {\tt 'EWSB'} } 
+\begin{align} 
+L_{GF} = \, &-\frac{1}{2} |\partial_{\mu}g|^2 \xi_{g}^{-1} -\frac{1}{2} |\partial_{\mu}\gamma|^2 \xi_{\gamma}^{-1} - |-\frac{i}{2} g_2 H^+ v \xi_{W^+}  + \partial_{\mu}W^+|^2 \xi_{W^+}^{-1} \nonumber \\ 
+ &-\frac{1}{2} |-\frac{1}{2} A^0 v \xi_{Z} \Big(g_1 \sin\Theta_W   + g_2 \cos\Theta_W  \Big) + \partial_{\mu}Z|^2 \xi_{Z}^{-1} 
+\end{align} 
+\subsection{Fields integrated out} 
+None 
